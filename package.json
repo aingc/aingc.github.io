@@ -1,0 +1,19 @@
+{
+  "name": "aingc.github.io",
+  "version": "1.0.0",
+  "description": "Site hosted on github",
+  "main": "test.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aingc/aingc.github.io.git"
+  },
+  "author": "Corey Aing",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aingc/aingc.github.io/issues"
+  },
+  "homepage": "https://github.com/aingc/aingc.github.io#readme"
+}
