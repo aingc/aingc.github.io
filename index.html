@@ -28,13 +28,34 @@
       <div class="container">
         <ul class="nav navbar-nav">
           <li class="active"><a href="index.html">Home</a></li>
-          <li><a href="#"><span class="fa fa-envelope"></span> Contact</a></li>
+          <li><a data-toggle="modal" href="#contactModal"><span class="fa fa-envelope"></span> Contact</a></li>
           <li><a href="#"><span class="fa fa-folder-open"></span> Projects</a></li>
           <li><a href="https://github.com/aingc" target="_blank"><i class="fa fa-github-alt"></i> Github</a></li>
           <li><a href="https://www.linkedin.com/in/corey-aing-20367376" target="_blank"><i class="fa fa-linkedin-square"></i> LinkedIn</a></li>
         </ul>
       </div>
     </nav>
+
+    <div class="modal fade" id="contactModal" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Contact</h4>
+          </div>
+          <div class="modal-body">
+            <p>
+              Thank you for being interested!<br><br>
+              Please click the button to send an email to me
+              <a class="btn btn-md btn-success" href="mailto:coreyaing@gmail.com" role="button">coreyaing@gmail.com</a>
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="jumbotron image-back" style="background-color: #e7e7e7;">
       <div class="container row-centered">
@@ -181,10 +202,9 @@
 
 
       <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-      <script src="scripts/jquery-2.2.0.min.js" />
+      <script src="scripts/jquery-2.2.0.min.js"></script>
       <!-- Include all compiled plugins (below), or include individual files as needed -->
       <script src="bootstrap-3.3.6/js/bootstrap.min.js"></script>
-      <script src="scripts/main.js"></script>
 
   </body>
 </html>
