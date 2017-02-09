@@ -1,0 +1,22 @@
+{
+  "name": "epms",
+  "version": "1.0.0",
+  "description": "\"Bullet Hell\" style Top-down vertical Shooter (SHMUP)",
+  "main": "index.html",
+  "scripts": {
+    "start": "http-server ./"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aingc/EPMS.git"
+  },
+  "author": "Corey Aing",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aingc/EPMS/issues"
+  },
+  "homepage": "https://github.com/aingc/EPMS#readme",
+  "dependencies": {
+    "http-server": "^0.9.0"
+  }
+}
