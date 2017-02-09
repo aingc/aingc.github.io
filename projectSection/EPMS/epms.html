@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="js/library/phaser.js"></script>
+    <script src="js/library/HealthBar.standalone.js"></script>
+    <title>EPMS</title>
+</head>
+<body>
+<table>
+    <tr>
+        <td>
+            <div id="container"><b>Eastern Palace Melancholic Sky, by Corey Aing</b></div>
+        </td>
+        <td style="vertical-align:top">
+            <p>
+                <b><u>Controls:</u></b><br>
+                Z - Shoot<br>
+                X - Bomb (You're invincible during the animation), use this if you're in a pinch!<br>
+                SHIFT (Hold) - Focus fire, move slower, and show your hitbox<br><br>
+                To play, click the Start Game button<br><br>
+                <b>Note: </b>Game may load a little bit longer than usual the first time due to preloading the assets
+            </p>
+        </td>
+    </tr>
+
+    <script type="text/javascript">
+        var game = new Phaser.Game(512, 600, Phaser.AUTO, 'container', {
+            preload: preload,
+            create: create,
+            update: update
+            //render: render
+        });
+
+        function preload() {
+            game.load.image('stage01BG', './assets/Background/stage01blue.png');
+            game.load.image('stage01BossBG', './assets/Background/stage01BossBG.png');
+            game.load.image('fade', './assets/Background/fade.png');
+            game.load.image('titleBG', './assets/Background/titleBG.png');
+            game.load.spritesheet('titleButton', './assets/Buttons/titleButtonSheet.png', 160, 57);
+            game.load.image('sanaeHurtbox', './assets/Player/playerHurtbox.png');
+            game.load.image('sanae', './assets/Player/playerStand.png');
+            game.load.image('yuyuko', './assets/Boss/yuyuko.png');
+            game.load.image('butterflyRed', './assets/Boss/bossBullets/butterflyRED.png');
+            game.load.image('butterflyYellow', './assets/Boss/bossBullets/butterflyYELLOW.png');
+            game.load.image('butterflyGreen', './assets/Boss/bossBullets/butterflyGREEN.png');
+            game.load.image('butterflyCyan', './assets/Boss/bossBullets/butterflyCYAN.png');
+            game.load.image('butterflyBlue', './assets/Boss/bossBullets/butterflyBLUE.png');
+            game.load.image('butterflyPurple', './assets/Boss/bossBullets/butterflyPURPLE.png');
+            game.load.image('butterflyBlack', './assets/Boss/bossBullets/butterflyBLACK.png');
+            game.load.image('yuyukoBullet', './assets/Boss/bossBullets/yuyukoBullet.png');
+            game.load.image('yuyukoOrb', './assets/Boss/bossBullets/yuyukoOrb.png');
+            game.load.image('yuyukoLaser', './assets/Boss/bossBullets/yuyukoLaser.png');
+            game.load.image('aimGruntShot', './assets/Enemy/enemyBullets/aimGruntShot.png');
+            game.load.image('straightGruntShot', './assets/Enemy/enemyBullets/straightGruntShot.png');
+            game.load.image('rotateGruntShot', './assets/Enemy/enemyBullets/rotateGruntShot.png');
+            game.load.image('gruntRotate', './assets/Enemy/gruntRotate.png');
+            game.load.image('gruntStraightRed', './assets/Enemy/gruntStraightRed.png');
+            game.load.image('gruntStraightBlue', './assets/Enemy/gruntStraightBlue.png');
+            game.load.image('gruntAimRed', './assets/Enemy/gruntAimRed.png');
+            game.load.image('gruntAimBlue', './assets/Enemy/gruntAimBlue.png');
+            game.load.image('singlePrimary', './assets/Player/playerShotA.png');
+            game.load.image('doublePrimary', './assets/Player/playerShotB.png');
+            game.load.image('spreadPrimary', './assets/Player/secondaryShotALT.png');
+            game.load.image('focusPrimary', './assets/Player/secondaryShot.png');
+            game.load.image('focusPrimaryLT', './assets/Player/playerShotBLeft.png');
+            game.load.image('focusPrimaryRT', './assets/Player/playerShotBRight.png');
+            game.load.image('playerBomb', './assets/Player/bomb.png');
+            game.load.image('bombExplode', './assets/Player/bombExplode.png');
+            game.load.image('smallP', './assets/Player/PowerSmall.png');
+            game.load.image('largeP', './assets/Player/PowerLarge.png');
+            game.load.image('playerCard', './assets/Player/sanaeCard.png');
+            game.load.image('bossCard', './assets/Boss/yuyukoCard.png');
+            game.load.spritesheet('gruntDeathExplode', './assets/Enemy/gruntDeathExplosion2.png', 64, 65);
+            game.load.audio('enemyDeath', './assets/Audio/SFX/enemyDeath.wav');
+            game.load.audio('playerDeath', './assets/Audio/SFX/playerExplosion.wav');
+            game.load.audio('bossDeath', './assets/Audio/SFX/bossExplosion.wav');
+            game.load.audio('bomb', './assets/Audio/SFX/SpecialSS.wav');
+            game.load.audio('titleScreenBGM', './assets/Audio/BGM/titleScreenBGM.mp3');
+            game.load.audio('stage01BGM', './assets/Audio/BGM/NightSakuraOfDeadSpirits.mp3');
+            game.load.audio('stage01BossBGM', './assets/Audio/BGM/BloomNobly.mp3');
+            game.load.audio('yuyukoButterflySFX', './assets/Audio/SFX/YuyuButterfly.wav');
+            game.load.audio('bossLaserSFX', './assets/Audio/SFX/bossLaser.wav');
+            game.load.audio('phaseDefeatSFX', './assets/Audio/SFX/PhaseDefeat.wav');
+            game.load.audio('phaseActivateSFX', './assets/Audio/SFX/PhaseActivate.wav');
+        }
+
+        var playerStats = {
+            score: 0,
+            graze: 0,
+            bomb: 2,
+            power: 0,
+            lives: 5, // 0
+            weaponName: 'SINGLE SHOT',
+            bombTimer: 0,
+            bombActive: false,
+            focusActive: false
+        };
+        const bossMaxHP = 6000;
+        var readyToPlay = false;
+        var lifeText;
+        var scoreText;
+        var powerText;
+        var weaponText;
+        var bombText;
+        var gameOverText;
+        var gameClearText;
+        var pocLineText;
+        var pocLine;
+        var fadeInPOCtext;
+        var fadeInPOCline;
+        var gameTimer = 0;
+        const playerPhysicsStats = {
+            normalVelocity: 275,
+            focusVelocity: 150,
+            playerHurtboxXrespawn: 250,
+            playerHurtboxYrespawn: 443.5,
+            playerSpriteXrespawn: 243,
+            playerSpriteYrespawn: 428
+        };
+        const enemyStats = {
+            aimGruntHP: 5,
+            straightGruntHP: 8,
+            rotateGruntHP: 12,
+            gruntXvelocity: 50,
+            gruntYvelocity: 50,
+            gruntStraightVelocity: 100,
+            movingGruntStraightXVelocity: 75,
+            movingGruntRotateXVelocity: 150,
+            movingGruntRotateYVelocity: 200,
+            reverseGruntRotateXVelocity: 300,
+            reverseGruntRotateYVelocity: 500
+        };
+        const enemyWeapon = {
+            gruntBulletSpeed: 250,
+            gruntBulletFireRate: 500,
+            gruntBulletAngleOffset: 90,
+            aimGruntBulletAngleOffset: 0,
+            gruntStraightBulletSpeed: 150, //100
+            gruntStraightBulletFireRate: 850, //16 is the lowest and quickest possible
+            movingGruntStraightBulletSpeed: 150,
+            movingGruntStraightBulletFireRate: 600,
+            gruntRotateBulletSpeed: 150,
+            gruntRotateBulletFireRate: 50,
+            gruntExplosiveRotateBulletSpeed: 100,
+            gruntExplosiveRotateFireRate: 16
+        };
+        const weaponStats = {
+            singleShotBulletSpeed: 850,
+            singleShotBulletFireRate: 90,
+            singleShotBulletAngleOffSet: 90,
+            singleShotDamage: 2,
+            doubleShotBulletSpeed: 900,
+            doubleShotBulletFireRate: 85,
+            doubleShotBulletAngleOffSet: 90,
+            doubleShotDamage: 3,
+            waveShotBulletSpeed: 850,
+            waveShotBulletFireRate: 180,
+            waveShotDamage: 1,
+            spreadShotBulletSpeed: 900,
+            spreadShotBulletFireRate: 70,
+            spreadShotBulletAngleVariance: 10,
+            spreadShotDamage: 1,
+            maxPowerBulletSpeed: 800,
+            maxPowerBulletFireRate: 80,
+            maxPowerBulletDamage: 1,
+            bombDamage: 24
+        };
+        var rotateGruntTimers = [];
+        var counterClockwiseShootID = [];
+
+        // Backgrounds
+        var titleBg;
+        var titleButton;
+        var bg;
+        var bossBG;
+        var fadeBG;
+
+        // Sound
+        var bgm;
+        var titleBGM;
+
+        var bossBGM;
+        var bossButterflySFX;
+        var bossLaserSFX;
+        var bossPause = true;
+        var bossPauseTimer = 0;
+        var phaseDefeatSFX;
+        var phaseActivateSFX;
+
+        var enemyDeathSFX;
+        var playerDeathSFX;
+        var playerBombSFX;
+
+        // Items
+        var smallP;
+        var largeP;
+
+        // Weapons
+        var singleShot;
+        var doubleShot;
+        var waveShotLT;
+        var waveShotRT;
+        var focusShotLT;
+        var focusShotRT;
+        var playerBombs; // Divine Wind: Forgotten Cyclone
+        var bombDispersal;
+
+        // Player
+        var playerHurtbox;
+        var playerSprite;
+        var playerCard;
+        var playerCardActive = false;
+        var cursors;
+        var fireButton;
+        var bombButton;
+        var focusButton;
+
+        // Enemy Data
+        var aimGrunts;
+        var straightGrunts;
+        var rotateGrunts;
+        var gruntDeaths;
+
+        // Boss Variables
+        var yuyukoBoss;
+        var bossCard;
+        var bossCardActive = false;
+        var bossDeathSFX;
+        var bossSpawned = false;
+        var yuyukoFloatUp = false;
+        var bossHPbar;
+        var bossText;
+        var bossTransition;
+        // Phase 1
+        var canHitBoss = true;
+        var bossWeaponNetherSignTracker;
+        var bossWeaponNetherRotationLT;
+        var bossWeaponNetherRotationRT;
+        var netherBulletData = {
+            netherRandX: 0,
+            netherRandY: 0,
+            netherButterflyFireRate: 300 //Should actually be 275, but is 300 to make it easier for the public
+        };
+        var trnznData = {
+            trnznRandX: 0,
+            trnznRandY: 0,
+            trnznTimer: 0,
+            trnznSFXTimer: 0
+        };
+        // Phase 2
+        var bossLaserExplode;
+        var bossLasers;
+        var bossLaserSelection = 0;
+        // Phase 3
+        var bossWeaponBloomLT;
+        var bossWeaponBloomRT;
+        var bossWeaponBloomTimer = 0;
+        const bossWeaponBloomFireRate = 16;
+        const bossWeaponBloomBulletSpeed = 75;
+        var bossWeaponBorderTimer = 0;
+        var bossBorderYellow;
+        var bossBorderBlue;
+        var bossBorderGreen;
+        var bossBorderRed;
+        var killedBoss = false;
+
+        // Enemy Weapons
+        var aimGruntWeapons = [];
+        var aimGruntWeaponDIS = []; // Stands for Death Index Signals
+        var rotateGruntWeapons = [];
+        var rotateGruntWeaponDIS = [];
+        var straightGruntWeapons = [];
+        var straightGruntWeaponDIS = [];
+
+        // weapon.Bullets is a group
+        function create() {
+            // Backgrounds
+            bossBG = game.add.tileSprite(0, 0, 512, 600, 'stage01BossBG');
+            bg = game.add.tileSprite(0, 0, 512, 600, 'stage01BG');
+
+            // Music and SFX
+            titleBGM = game.add.audio('titleScreenBGM');
+            titleBGM.play();
+            bgm = game.add.audio('stage01BGM');
+            bossBGM = game.add.audio('stage01BossBGM');
+            bossButterflySFX = game.add.audio('yuyukoButterflySFX');
+            bossButterflySFX.volume = 0.4;
+            bossLaserSFX = game.add.audio('bossLaserSFX');
+
+            enemyDeathSFX = game.add.audio('enemyDeath');
+            enemyDeathSFX.volume = 0.3;
+            playerDeathSFX = game.add.audio('playerDeath');
+            playerDeathSFX.volume = 0.3;
+            playerBombSFX = game.add.audio('bomb');
+            playerBombSFX.volume = 0.7;
+            bossDeathSFX = game.add.audio('bossDeath');
+            bossDeathSFX.volume = 1.1;
+            phaseDefeatSFX = game.add.audio('phaseDefeatSFX');
+            phaseActivateSFX = game.add.audio('phaseActivateSFX');
+
+
+            // Items
+            smallP = game.add.emitter(0, 0, 200);
+            smallP.enableBody = true;
+            smallP.physicsBodyType = Phaser.Physics.ARCADE;
+            smallP.forEach(function(powPellet) {
+                powPellet.outOfBoundsKill = true;
+                powPellet.checkWorldBounds = true;
+            });
+            smallP.makeParticles('smallP');
+            smallP.gravity = 200;
+            smallP.setXSpeed(-10, 10);
+            smallP.setYSpeed(-1000);
+
+            largeP = game.add.emitter(0, 0, 200);
+            largeP.enableBody = true;
+            largeP.physicsBodyType = Phaser.Physics.ARCADE;
+            largeP.forEach(function(powPellet) {
+                powPellet.outOfBoundsKill = true;
+                powPellet.checkWorldBounds = true;
+            });
+            largeP.makeParticles('largeP');
+            smallP.gravity = 175;
+            smallP.setXSpeed(-5, 5);
+            smallP.setYSpeed(-1000);
+
+            // ___WEAPONS___
+
+            // Single Shot
+            singleShot = game.add.weapon(30, 'singlePrimary');
+            singleShot.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+            singleShot.bulletAngleOffset = weaponStats.singleShotBulletAngleOffSet;
+            singleShot.bulletSpeed = weaponStats.singleShotBulletSpeed;
+            singleShot.fireRate = weaponStats.singleShotBulletFireRate;
+            singleShot.bullets.forEach(function(bullet) {
+                bullet.damageAmount = weaponStats.singleShotDamage;
+            });
+
+            // Double Shot
+            doubleShot = game.add.weapon(30, 'doublePrimary');
+            doubleShot.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+            doubleShot.bulletAngleOffset = weaponStats.singleShotBulletAngleOffSet;
+            doubleShot.bulletSpeed = weaponStats.singleShotBulletSpeed;
+            doubleShot.fireRate = weaponStats.singleShotBulletFireRate;
+            doubleShot.bullets.forEach(function(bullet) {
+               bullet.damageAmount = weaponStats.doubleShotDamage;
+            });
+
+            // Wave Shot, Spread Shot, and Max Power
+            waveShotLT = game.add.weapon(30, 'spreadPrimary');
+            waveShotLT.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+            waveShotLT.bulletSpeed = weaponStats.waveShotBulletSpeed;
+            waveShotLT.fireRate = weaponStats.waveShotBulletFireRate;
+            waveShotLT.bullets.forEach(function(bullet) {
+                bullet.damageAmount = weaponStats.waveShotDamage;
+            });
+            waveShotRT = game.add.weapon(30, 'spreadPrimary');
+            waveShotRT.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+            waveShotRT.bulletSpeed = weaponStats.waveShotBulletSpeed;
+            waveShotRT.fireRate = weaponStats.waveShotBulletFireRate;
+            waveShotRT.bullets.forEach(function(bullet) {
+                bullet.damageAmount = weaponStats.waveShotDamage;
+            });
+
+            // Focus Shot when wave, spread, or max power are equipped
+            focusShotLT = game.add.weapon(30, 'focusPrimary');
+            focusShotLT.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+            focusShotLT.bulletSpeed = weaponStats.spreadShotBulletSpeed;
+            focusShotLT.fireRate = weaponStats.doubleShotBulletFireRate;
+            focusShotLT.bullets.forEach(function(bullet) {
+                bullet.damageAmount = weaponStats.waveShotDamage;
+            }, this);
+            focusShotRT = game.add.weapon(30, 'focusPrimary');
+            focusShotRT.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+            focusShotRT.bulletSpeed = weaponStats.spreadShotBulletSpeed;
+            focusShotRT.fireRate = weaponStats.doubleShotBulletFireRate;
+            focusShotRT.bullets.forEach(function(bullet) {
+                bullet.damageAmount = weaponStats.waveShotDamage;
+            }, this);
+
+            // Bomb
+            playerBombs = game.add.group();
+            playerBombs.enableBody = true;
+            playerBombs.physicsBodyType = Phaser.Physics.ARCADE;
+            bombDispersal = game.add.group();
+            bombDispersal.enableBody = true;
+            bombDispersal.physicsBodyType = Phaser.Physics.ARCADE;
+
+            // Enemies
+            aimGrunts = game.add.group();
+            aimGrunts.enableBody = true;
+            aimGrunts.physicsBodyType = Phaser.Physics.ARCADE;
+
+            straightGrunts = game.add.group();
+            straightGrunts.enableBody = true;
+            straightGrunts.physicsBodyType = Phaser.Physics.ARCADE;
+
+            rotateGrunts = game.add.group();
+            rotateGrunts.enableBody = true;
+            rotateGrunts.physicsBodyType = Phaser.Physics.ARCADE;
+
+            // Player
+            playerHurtbox = this.add.sprite((game.world.width/2), game.world.height - 150, 'sanaeHurtbox');
+            playerHurtbox.health = playerStats.lives;
+            playerHurtbox.anchor.setTo(0.5);
+            playerSprite = this.add.sprite((game.world.width/2), game.world.height - 150, 'sanae');
+            playerSprite.health = playerStats.lives;
+            playerSprite.anchor.setTo(0.5);
+
+
+            game.physics.arcade.enable(playerHurtbox);
+            game.physics.arcade.enable(playerSprite);
+            playerHurtbox.body.collideWorldBounds = true;
+            playerHurtbox.body.setCircle(6, 1);
+            //playerHurtbox.body.setCircle(4, 3, 2); should definitely switch to this at some time
+            playerSprite.body.collideWorldBounds = true;
+
+            // Weapon Tracking
+            // -- Weapon on player
+            singleShot.trackSprite(playerSprite, 0, -(playerSprite.height/2 + 27));
+            doubleShot.trackSprite(playerSprite, 0, -(playerSprite.height/2 + 27));
+            waveShotLT.trackSprite(playerSprite, -50, -(playerSprite.height/2));
+            waveShotRT.trackSprite(playerSprite, 50, -(playerSprite.height/2));
+            focusShotLT.trackSprite(playerSprite, -30, -(playerSprite.height/2));
+            focusShotRT.trackSprite(playerSprite, 30, -(playerSprite.height/2));
+
+            // Setting Controls
+            cursors = this.input.keyboard.createCursorKeys();
+            fireButton = this.input.keyboard.addKey(Phaser.KeyCode.Z);
+            bombButton = this.input.keyboard.addKey(Phaser.KeyCode.X);
+            focusButton = this.input.keyboard.addKey(Phaser.KeyCode.SHIFT);
+
+            // Boss Groups
+            bossTransition = game.add.group();
+            bossTransition.enableBody = true;
+            bossTransition.physicsBodyType = Phaser.Physics.ARCADE;
+            bossWeaponNetherSignTracker = game.add.group();
+            bossWeaponNetherSignTracker.enableBody = true;
+            bossWeaponNetherSignTracker.physicsBodyType = Phaser.Physics.ARCADE;
+            bossLasers = game.add.group();
+            bossLasers.enableBody = true;
+            bossLasers.physicsBodyType = Phaser.Physics.ARCADE;
+
+            // Boss Phase 1 Weapons 'Nether Sign'
+            bossWeaponNetherRotationLT = game.add.weapon(200, 'butterflyRed');
+            bossWeaponNetherRotationLT.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+            bossWeaponNetherRotationLT.bulletAngleOffset = 180;
+            bossWeaponNetherRotationLT.fireAngle = 90;
+            bossWeaponNetherRotationLT.bulletAngleVariance = 60;
+            bossWeaponNetherRotationLT.bulletSpeed = 100;
+            bossWeaponNetherRotationLT.fireRate = netherBulletData.netherButterflyFireRate; //300
+            bossWeaponNetherRotationLT.fireFrom.setTo(128, 140, 1, 1);
+            bossWeaponNetherRotationLT.bullets.forEach(function(bullet) {
+                bullet.damageAmount = 1;
+                bullet.body.setCircle(6, 7.4, 10.5);
+            }, this);
+            bossWeaponNetherRotationRT = game.add.weapon(200, 'butterflyBlue');
+            bossWeaponNetherRotationRT.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+            bossWeaponNetherRotationRT.bulletAngleOffset = 180;
+            bossWeaponNetherRotationRT.fireAngle = 90;
+            bossWeaponNetherRotationRT.bulletAngleVariance = 60;
+            bossWeaponNetherRotationRT.bulletSpeed = 100;
+            bossWeaponNetherRotationRT.fireRate = netherBulletData.netherButterflyFireRate;
+            bossWeaponNetherRotationRT.fireFrom.setTo(364, 140, 1, 1);
+            bossWeaponNetherRotationRT.bullets.forEach(function(bullet) {
+                bullet.damageAmount = 1;
+                bullet.body.setCircle(6, 7.4, 10.5);
+            }, this);
+
+            // Boss Phase 2 Weapons 'Ghost Sign'
+            bossLaserExplode = game.add.emitter(0, 0, 500);
+            bossLaserExplode.enableBody = true;
+            bossLaserExplode.physicsBodyType = Phaser.Physics.ARCADE;
+            bossLaserExplode.forEach(function(butterfly) {
+                butterfly.outOfBoundsKill = true;
+                butterfly.checkWorldBounds = true;
+                butterfly.body.setCircle(6, 7.4, 10.5);
+                butterfly.damageAmount = 1;
+            }, this);
+            bossLaserExplode.makeParticles('butterflyBlue');
+            bossLaserExplode.gravity = 0;
+
+            // Boss Phase 3 Weapons 'Bloom Nobly'
+            bossWeaponBloomLT = game.add.weapon(250, 'yuyukoBullet');
+            bossWeaponBloomLT.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+            bossWeaponBloomLT.bulletSpeed = bossWeaponBloomBulletSpeed;
+            bossWeaponBloomLT.fireRate = 16;
+            bossWeaponBloomLT.fireFrom.setTo(128, 140, 1, 1);
+            bossWeaponBloomLT.bullets.forEach(function(bullet) {
+                bullet.damageAmount = 1;
+            }, this);
+            bossWeaponBloomRT = game.add.weapon(250, 'yuyukoBullet');
+            bossWeaponBloomRT.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+            bossWeaponBloomRT.bulletSpeed = bossWeaponBloomBulletSpeed;
+            bossWeaponBloomRT.fireRate = 16;
+            bossWeaponBloomRT.fireFrom.setTo(364, 140, 1, 1);
+            bossWeaponBloomRT.bullets.forEach(function(bullet) {
+                bullet.damageAmount = 1;
+            }, this);
+            bossBorderRed = game.add.group();
+            bossBorderRed.enableBody = true;
+            bossBorderRed.physicsBodyType = Phaser.Physics.ARCADE;
+            bossBorderRed.createMultiple(56, 'butterflyRed');
+            bossBorderRed.forEach(function(butterfly) {
+                butterfly.anchor.setTo(0.5);
+                butterfly.outOfBoundsKill = true;
+                butterfly.checkWorldBounds = true;
+                butterfly.damageAmount = 1;
+                butterfly.body.immovable = true;
+                butterfly.body.setCircle(7, 7.4, 10.5);
+                butterfly.angle = 90;
+            }, this);
+            bossBorderYellow = game.add.group();
+            bossBorderYellow.enableBody = true;
+            bossBorderYellow.physicsBodyType = Phaser.Physics.ARCADE;
+            bossBorderYellow.createMultiple(50, 'butterflyYellow');
+            bossBorderYellow.forEach(function(butterfly) {
+                butterfly.anchor.setTo(0.5);
+                butterfly.outOfBoundsKill = true;
+                butterfly.checkWorldBounds = true;
+                butterfly.damageAmount = 1;
+                butterfly.body.immovable = true;
+                butterfly.body.setCircle(7, 7.4, 10.5);
+                butterfly.angle = 90;
+            }, this);
+            bossBorderGreen = game.add.group();
+            bossBorderGreen.enableBody = true;
+            bossBorderGreen.physicsBodyType = Phaser.Physics.ARCADE;
+            bossBorderGreen.createMultiple(43, 'butterflyGreen');
+            bossBorderGreen.forEach(function(butterfly) {
+                butterfly.anchor.setTo(0.5);
+                butterfly.outOfBoundsKill = true;
+                butterfly.checkWorldBounds = true;
+                butterfly.damageAmount = 1;
+                butterfly.body.immovable = true;
+                butterfly.body.setCircle(7, 7.4, 10.5);
+                butterfly.angle = 90;
+            }, this);
+            bossBorderBlue = game.add.group();
+            bossBorderBlue.enableBody = true;
+            bossBorderBlue.physicsBodyType = Phaser.Physics.ARCADE;
+            bossBorderBlue.createMultiple(37, 'butterflyBlue');
+            bossBorderBlue.forEach(function(butterfly) {
+                butterfly.anchor.setTo(0.5);
+                butterfly.outOfBoundsKill = true;
+                butterfly.checkWorldBounds = true;
+                butterfly.damageAmount = 1;
+                butterfly.body.immovable = true;
+                butterfly.body.setCircle(7, 7.4, 10.5);
+                butterfly.angle = 90;
+            }, this);
+
+            // Game Text
+                // Score
+            scoreText = game.add.text(10, game.world.height - 120, 'Score: ' + playerStats.score, {font: '20px Arial', fill: '#00FF00'});
+            scoreText.render = function() {
+                scoreText.text = 'Score: ' + Math.max(playerStats.score, 0);
+            };
+                // Power
+            powerText = game.add.text(10, game.world.height - 90, 'Power: ' + playerStats.power + '/4.0', {font: '20px Arial', fill: '#00FF00'});
+            powerText.render = function() {
+                if (playerStats.power >= 4000) {
+                    powerText.text = 'Power: ' + (Math.floor(Math.max(playerStats.power, 0)/1000)) + '.0/4.0';
+                }
+                else {
+                    powerText.text = 'Power: ' + (Math.max(playerStats.power, 0) / 1000) + '/4.0';
+                }
+            };
+                // Bombs
+            bombText = game.add.text(10, game.world.height - 60, 'Bombs: ' + playerStats.bomb, {font: '20px Arial', fill: '#00FF00'});
+            bombText.render = function() {
+                bombText.text = 'Bombs: ' + Math.max(playerStats.bomb, 0);
+            };
+                // Lives
+            lifeText = game.add.text(10, game.world.height - 30, 'Lives: ' + playerSprite.health, {font: '20px Arial', fill: '#00FF00'});
+            lifeText.render = function() {
+                lifeText.text = 'Lives: ' + Math.max(playerSprite.health, 0);
+            };
+
+                // Game Over
+            gameOverText = game.add.text(game.world.centerX, game.world.centerY, 'GAME OVER\nYOUR ENDING SCORE: ' + playerStats.score + '\nTo restart, refresh the browser', {font: '30px Arial', fill: '#fff'});
+            gameOverText.anchor.setTo(0.5);
+            gameOverText.visible = false;
+
+                // Game Clear
+            gameClearText = game.add.text(game.world.centerX, game.world.centerY, 'WELL PLAYED!\nYou finished with a score of:\n' + playerStats.score, {font: '30px Arial', fill: '#fff'});
+            gameClearText.anchor.setTo(0.5);
+            gameClearText.visible = false;
+
+
+                // Weapon
+            weaponText = game.add.text(300, game.world.height - 40, playerStats.weaponName, {font: '30px Arial', fill: '#00FFFF'});
+            weaponText.render = function() {
+                weaponText.text = playerStats.weaponName;
+                if (playerStats.weaponName === 'DOUBLE SHOT' || playerStats.weaponName === 'SPREAD SHOT') {
+                    weaponText.x = 286.5;
+                }
+                else if (playerStats.weaponName === 'TRIPLE SHOT') {
+                    weaponText.x = 305;
+                }
+                else if (playerStats.weaponName === 'WAVE SHOT') {
+                    weaponText.x = 325;
+                }
+                else {
+                    weaponText.x = 300;
+                }
+            };
+
+                // Point of Collection Line
+                    // POC Line Text
+            pocLineText = game.add.text(game.world.centerX, game.world.centerY/2 - 10, 'Point of Collection', {font: '25px Arial', fill: '#00FF00'});
+            pocLineText.anchor.setTo(0.5);
+            pocLineText.visible = false;
+                    // POC Line
+            pocLine = game.add.text(0, game.world.centerY/2, '____________________________________________________________________________________________', {font: '20px Arial', fill: '#FF0000'});
+            pocLine.anchor.setTo(0.5);
+            pocLine.visible = false;
+
+            // Enemy Death
+            gruntDeaths = game.add.group();
+            gruntDeaths.enableBody = true;
+            gruntDeaths.physicsBodyType = Phaser.Physics.ARCADE;
+            gruntDeaths.createMultiple(30, 'gruntDeathExplode');
+            gruntDeaths.setAll('anchor.x', 0.5);
+            gruntDeaths.setAll('anchor.y', 0.5);
+            gruntDeaths.forEach(function(explode) {
+                explode.animations.add('gruntDeathExplode');
+                explode.scale.setTo(1.5, 1.5);
+            });
+            titleBg = game.add.tileSprite(0, 0, 512, 600, 'titleBG');
+            titleBg.bringToTop();
+            titleButton = game.add.button(game.world.centerX - 80, game.world.centerY - 28.5, 'titleButton', function() {
+                readyToPlay = true;
+                titleBg.visible = false;
+                titleButton.visible = false;
+                titleBGM.stop();
+                bgm.play();
+            }, this, 1, 0, 2);
+        }
+
+        function update() {
+            if (readyToPlay) {
+                playerSprite.sendToBack();
+                playerHurtbox.sendToBack();
+                if (!bossSpawned) {
+                    bg.sendToBack();
+                    bossBG.sendToBack();
+                }
+                else if (bossSpawned) {
+                    bossBG.sendToBack();
+                    bg.sendToBack();
+                }
+
+                if (playerCardActive) {
+                    playerCard.bringToTop();
+                    if (playerCard.body.x <= -117) {
+                        playerCard.kill();
+                        playerCardActive = false;
+                    }
+                }
+                if (bossCardActive) {
+                    bossCard.bringToTop();
+                    if (bossCard.body.x >= 440) {
+                        bossCard.kill();
+                        bossCardActive = false;
+                    }
+                }
+                smallP.callAll('bringToTop');
+                largeP.callAll('bringToTop');
+                aimGrunts.callAll('bringToTop');
+                straightGrunts.callAll('bringToTop');
+                rotateGrunts.callAll('bringToTop');
+                bombDispersal.callAll('bringToTop');
+                playerHurtbox.body.velocity.x = 0;
+                playerHurtbox.body.velocity.y = 0;
+                playerSprite.body.velocity.x = 0;
+                playerSprite.body.velocity.y = 0;
+
+                // Collision Checking
+
+                // aimGrunts
+                if (!playerStats.bombActive) {
+                    game.physics.arcade.overlap(playerHurtbox, aimGrunts, playerCollide, null, this);
+                }
+                game.physics.arcade.overlap(singleShot.bullets, aimGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(doubleShot.bullets, aimGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(waveShotLT.bullets, aimGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(waveShotRT.bullets, aimGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(focusShotLT.bullets, aimGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(focusShotRT.bullets, aimGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(bombDispersal, aimGrunts, bulletCollide, null, this);
+
+                // straightGrunts
+                if (!playerStats.bombActive) {
+                    game.physics.arcade.overlap(playerHurtbox, straightGrunts, playerCollide, null, this);
+                }
+                game.physics.arcade.overlap(singleShot.bullets, straightGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(doubleShot.bullets, straightGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(waveShotLT.bullets, straightGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(waveShotRT.bullets, straightGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(focusShotLT.bullets, straightGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(focusShotRT.bullets, straightGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(bombDispersal, straightGrunts, bulletCollide, null, this);
+
+                // rotateGrunts
+                if (!playerStats.bombActive) {
+                    game.physics.arcade.overlap(playerHurtbox, rotateGrunts, playerCollide, null, this);
+                }
+                game.physics.arcade.overlap(singleShot.bullets, rotateGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(doubleShot.bullets, rotateGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(waveShotLT.bullets, rotateGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(waveShotRT.bullets, rotateGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(focusShotLT.bullets, rotateGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(focusShotRT.bullets, rotateGrunts, bulletCollide, null, this);
+                game.physics.arcade.overlap(bombDispersal, rotateGrunts, bulletCollide, null, this);
+
+                // Check Enemy Bullet Collisions/Overlap with player and bomb if active
+                checkGruntBulletOverlap(aimGruntWeapons);
+                checkGruntBulletOverlap(straightGruntWeapons);
+                checkGruntBulletOverlap(rotateGruntWeapons);
+
+                // Vacuum Grunt Bullets when bomb is active
+                bombVacuum();
+
+                // Check Power Item Collisions
+                game.physics.arcade.overlap(playerSprite, smallP, playerPowerUp, null, this);
+                game.physics.arcade.overlap(playerSprite, largeP, playerPowerUp, null, this);
+
+                checkControls();
+
+                // Enemy Shooting
+                gruntFireSprite(aimGrunts, aimGruntWeapons, aimGruntWeaponDIS);
+                gruntStraightFire(straightGrunts, straightGruntWeapons, straightGruntWeaponDIS);
+                gruntRotateFire(rotateGrunts, rotateGruntWeapons, rotateGruntWeaponDIS);
+
+                // Scroll the bg
+                if (!bossSpawned) {
+                    bg.tilePosition.y += 1;
+                }
+
+                // Check game over
+                if (!playerHurtbox.alive && gameOverText.visible === false) {
+                    gameOverText.text = 'GAME OVER\nYOUR ENDING SCORE: ' + playerStats.score + '\nTo restart, refresh the browser';
+                    gameOverText.visible = true;
+                    var fadeInGameOver = game.add.tween(gameOverText);
+                    fadeInGameOver.to({alpha: 0.2}, 1000, Phaser.Easing.Quintic.Out, false, 0, -1, true);
+                    fadeInGameOver.start();
+                }
+
+                // Check game clear
+                if (playerHurtbox.alive && gameClearText.visible === false && killedBoss) {
+                    gameClearText.text = 'WELL PLAYED!\nYou finished with a score of:\n' + playerStats.score;
+                    gameClearText.visible = true;
+                    clearYuyukoBullets();
+                }
+
+                // Display POC Line at the beginning and check for breaches
+                displayPOCLine();
+                checkPOClineBreach();
+
+                startStageOne();
+                if (bgm.volume <= 0) {
+                    bgm.stop();
+                }
+                if (bossSpawned) {
+                    // boss movement
+                    yuyukoFloat();
+
+                    // boss collision
+                    if (!playerStats.bombActive) {
+                        game.physics.arcade.overlap(playerHurtbox, yuyukoBoss, playerCollide, null, this);
+                        game.physics.arcade.overlap(playerHurtbox, bossTransition, playerCollide, null, this);
+                        game.physics.arcade.overlap(playerHurtbox, bossWeaponNetherSignTracker, playerCollide, null, this);
+                        game.physics.arcade.overlap(playerHurtbox, bossWeaponNetherRotationLT.bullets, playerCollide, null, this);
+                        game.physics.arcade.overlap(playerHurtbox, bossWeaponNetherRotationRT.bullets, playerCollide, null, this);
+                        game.physics.arcade.overlap(playerHurtbox, bossLaserExplode, playerCollide, null, this);
+                        game.physics.arcade.overlap(playerHurtbox, bossWeaponBloomLT.bullets, playerCollide, null, this);
+                        game.physics.arcade.overlap(playerHurtbox, bossWeaponBloomRT.bullets, playerCollide, null, this);
+                        game.physics.arcade.overlap(playerHurtbox, bossBorderRed, playerCollide, null, this);
+                        game.physics.arcade.overlap(playerHurtbox, bossBorderYellow, playerCollide, null, this);
+                        game.physics.arcade.overlap(playerHurtbox, bossBorderGreen, playerCollide, null, this);
+                        game.physics.arcade.overlap(playerHurtbox, bossBorderBlue, playerCollide, null, this);
+                        // and more boss weapons colliding with player
+                    }
+                    if (canHitBoss) {
+                        game.physics.arcade.overlap(singleShot.bullets, yuyukoBoss, yuyukoShotCollide, null, this);
+                        game.physics.arcade.overlap(doubleShot.bullets, yuyukoBoss, yuyukoShotCollide, null, this);
+                        game.physics.arcade.overlap(waveShotLT.bullets, yuyukoBoss, yuyukoShotCollide, null, this);
+                        game.physics.arcade.overlap(waveShotRT.bullets, yuyukoBoss, yuyukoShotCollide, null, this);
+                        game.physics.arcade.overlap(focusShotLT.bullets, yuyukoBoss, yuyukoShotCollide, null, this);
+                        game.physics.arcade.overlap(focusShotRT.bullets, yuyukoBoss, yuyukoShotCollide, null, this);
+                    }
+                    game.physics.arcade.overlap(bossTransition, playerBombs, bombCycloneCollide, null, this);
+                    game.physics.arcade.overlap(bossWeaponNetherSignTracker, playerBombs, bombCycloneCollide, null, this);
+                    game.physics.arcade.overlap(bossWeaponNetherRotationLT.bullets, playerBombs, bombCycloneCollide, null, this);
+                    game.physics.arcade.overlap(bossWeaponNetherRotationRT.bullets, playerBombs, bombCycloneCollide, null, this);
+                    game.physics.arcade.overlap(bossLaserExplode, playerBombs, bombCycloneCollide, null, this);
+                    game.physics.arcade.overlap(bossWeaponBloomLT, playerBombs, bombCycloneCollide, null, this);
+                    game.physics.arcade.overlap(bossWeaponBloomRT, playerBombs, bombCycloneCollide, null, this);
+                    // all other boss weapons with bomb
+                    //game.physics.arcade.overlap(__SOME OTHER BOSS WEAPON__, playerBombs, bombCycloneCollide, null, this);
+
+
+                    //game.physics.arcade.overlap(playerHurtbox, bossTrnznTwo, playerCollide, null, this);
+                    //game.physics.arcade.overlap(playerHurtbox, bossTrnznThree, playerCollide, null, this);
+                    // check bomb collision with each butterfly transition
+                    // check bomb collision with yuyukoBoss
+
+                    // boss shoot (check hp, and change spell card accordingly)
+                    bossLasers.forEachAlive(function (laser) {
+                        burstLaser(laser.body.x, laser.body.y, 2);
+                    }, this);
+                    checkYuyukoHealthAndShoot();
+                    bossTransition.callAll('bringToTop');
+                    yuyukoBoss.moveDown();
+                }
+                gameTimer++;
+                if (playerStats.bombActive) {
+                    playerStats.bombTimer++;
+                    playerBombs.callAll('bringToTop');
+                    // turn bombActive flag to false again at a certain time when bomb sound clip is over
+                }
+            }
+        }
+
+        // DEBUGGING
+        function render() {
+            game.debug.body(playerHurtbox);
+            //game.debug.body(yuyukoBoss);
+            aimGrunts.forEachAlive(renderGroup, this, 'rgba(255, 0, 0, 0.4)');
+            straightGrunts.forEachAlive(renderGroup, this, 'rgba(255, 0, 0, 0.4)');
+            rotateGrunts.forEachAlive(renderGroup, this, 'rgba(255, 0, 0, 0.4)');
+            singleShot.bullets.forEachAlive(renderGroup, this, 'rgba(0, 0, 255, 0.4)');
+            doubleShot.bullets.forEachAlive(renderGroup, this, 'rgba(0, 0, 255, 0.4)');
+            waveShotLT.bullets.forEachAlive(renderGroup, this, 'rgba(255, 0, 0, 0.4)');
+            waveShotRT.bullets.forEachAlive(renderGroup, this, 'rgba(255, 0, 0, 0.4)');
+            focusShotLT.bullets.forEachAlive(renderGroup, this, 'rgba(255, 0, 0, 0.4)');
+            focusShotRT.bullets.forEachAlive(renderGroup, this, 'rgba(255, 0, 0, 0.4)');
+            bossTransition.forEachAlive(renderGroup, this, 'rgba(255, 0, 0, 0.8)');
+            bossLasers.forEachAlive(renderGroup, this, 'rgba(0, 0, 255, 0.8)');
+            playerBombs.forEachAlive(renderGroup, this, 'rgba(255, 0, 0, 0.8)');
+        }
+
+        function renderGroup(child, strColor) {
+            game.debug.body(child, strColor);
+        }
+        // End DEBUGGING
+
+        // Control Actions
+        function checkControls() {
+            if (focusButton.isDown) {
+                playerHurtbox.bringToTop();
+            }
+
+            if (cursors.up.isDown && !focusButton.isDown) {
+                if (playerSprite.body.y <= 0) {
+                    playerHurtbox.body.velocity.y = 0;
+                    playerHurtbox.body.y = 16;
+                }
+                else {
+                    playerHurtbox.body.velocity.y = -(playerPhysicsStats.normalVelocity);
+                    playerSprite.body.velocity.y = -(playerPhysicsStats.normalVelocity);
+                }
+            }
+            else if (cursors.up.isDown && focusButton.isDown) {
+                playerHurtbox.bringToTop();
+                if (playerSprite.body.y <= 0) {
+                    playerHurtbox.body.velocity.y = 0;
+                    playerHurtbox.body.y = 16;
+
+                }
+                else {
+                    playerHurtbox.body.velocity.y = -(playerPhysicsStats.focusVelocity);
+                    playerSprite.body.velocity.y = -(playerPhysicsStats.focusVelocity);
+                }
+            }
+            else if (cursors.down.isDown && !focusButton.isDown) {
+                if (playerSprite.body.y >= 556) {
+                    playerHurtbox.body.velocity.y = 0;
+                    playerHurtbox.body.y = 572;
+                }
+                else {
+                    playerHurtbox.body.velocity.y = playerPhysicsStats.normalVelocity;
+                    playerSprite.body.velocity.y = playerPhysicsStats.normalVelocity;
+                }
+            }
+            else if (cursors.down.isDown && focusButton.isDown) {
+                playerHurtbox.bringToTop();
+                if (playerSprite.body.y >= 556) {
+                    playerHurtbox.body.velocity.y = 0;
+                    playerHurtbox.body.y = 572;
+                }
+                else {
+                    playerHurtbox.body.velocity.y = playerPhysicsStats.focusVelocity;
+                    playerSprite.body.velocity.y = playerPhysicsStats.focusVelocity;
+                }
+            }
+
+            if (cursors.left.isDown && !focusButton.isDown) {
+                if (playerSprite.body.x <= 0) {
+                    playerHurtbox.body.velocity.x = 0;
+                    playerHurtbox.body.x = 6;
+                }
+                else {
+                    playerHurtbox.body.velocity.x = -(playerPhysicsStats.normalVelocity);
+                    playerSprite.body.velocity.x = -(playerPhysicsStats.normalVelocity);
+                }
+            }
+            else if (cursors.left.isDown && focusButton.isDown) {
+                playerHurtbox.bringToTop();
+                if (playerSprite.body.x <= 0) {
+                    playerHurtbox.body.velocity.x = 0;
+                    playerHurtbox.body.x = 6;
+                }
+                else {
+                    playerHurtbox.body.velocity.x = -(playerPhysicsStats.focusVelocity);
+                    playerSprite.body.velocity.x = -(playerPhysicsStats.focusVelocity);
+                }
+            }
+            else if (cursors.right.isDown && !focusButton.isDown) {
+                if (playerSprite.body.x >= 486) {
+                    playerHurtbox.body.velocity.x = 0;
+                    playerHurtbox.body.x = 492;
+                }
+                else {
+                    playerHurtbox.body.velocity.x = playerPhysicsStats.normalVelocity;
+                    playerSprite.body.velocity.x = playerPhysicsStats.normalVelocity;
+                }
+            }
+            else if (cursors.right.isDown && focusButton.isDown) {
+                playerHurtbox.bringToTop();
+                if (playerSprite.body.x >= 486) {
+                    playerHurtbox.body.velocity.x = 0;
+                    playerHurtbox.body.x = 492;
+                }
+                else {
+                    playerHurtbox.body.velocity.x = playerPhysicsStats.focusVelocity;
+                    playerSprite.body.velocity.x = playerPhysicsStats.focusVelocity;
+                }
+            }
+
+            // Check amount of P and then fire appropriate weapon
+            if (playerHurtbox.alive && fireButton.isDown && playerStats.power >= 0 && playerStats.power < 500) {
+                singleShot.fire();
+                playerStats.weaponName = 'SINGLE SHOT';
+                weaponText.render();
+                // Update weapon text: 'SINGLE SHOT'
+            }
+            // focus fire single shot here
+            else if (playerHurtbox.alive && fireButton.isDown && playerStats.power >= 500 && playerStats.power < 1000) {
+                doubleShot.fire();
+                playerStats.weaponName = 'DOUBLE SHOT';
+                weaponText.render();
+                // Update weapon text: 'DOUBLE SHOT'
+            }
+            // focus fire double shot here
+            else if (playerHurtbox.alive && fireButton.isDown && playerStats.power >= 1000 && playerStats.power < 2000) {
+                singleShot.fire();
+                doubleShot.fire();
+                playerStats.weaponName = 'TRIPLE SHOT';
+                weaponText.render();
+                // Update weapon text: 'TRIPLE SHOT'
+            }
+            // focus fire triple shot here
+            else if (playerHurtbox.alive && fireButton.isDown && !focusButton.isDown && playerStats.power >= 2000 && playerStats.power < 3000) {
+                // Update weapon text: 'WAVE SHOT'
+                singleShot.fire();
+                doubleShot.fire();
+
+                waveShotLT.bulletSpeed = weaponStats.waveShotBulletSpeed;
+                waveShotLT.bulletAngleVariance = 0;
+                waveShotLT.fireRate = weaponStats.waveShotBulletFireRate;
+                waveShotLT.bullets.forEachAlive(function(bullet) {
+                    bullet.damageAmount = weaponStats.waveShotDamage;
+                    bullet.body.setSize(60, 13, -23, 24);
+                    bullet.scale.setTo(1, 1);
+                }, this);
+
+                waveShotRT.bulletSpeed = weaponStats.waveShotBulletSpeed;
+                waveShotRT.bulletAngleVariance = 0;
+                waveShotRT.fireRate = weaponStats.waveShotBulletFireRate;
+                waveShotRT.bullets.forEachAlive(function(bullet) {
+                    bullet.damageAmount = weaponStats.waveShotDamage;
+                    bullet.body.setSize(60, 13, -23, 24);
+                    bullet.scale.setTo(1, 1);
+                }, this);
+
+                waveShotLT.fire();
+                waveShotRT.fire();
+                playerStats.weaponName = 'WAVE SHOT';
+                weaponText.render();
+            }
+            else if (playerHurtbox.alive && fireButton.isDown && focusButton.isDown && playerStats.power >= 2000 && playerStats.power < 3000) {
+                // Focus 'WAVE SHOT'
+                singleShot.fire();
+                doubleShot.fire();
+
+                focusShotLT.bullets.forEachAlive(function(bullet) {
+                    bullet.damageAmount = weaponStats.waveShotDamage;
+                    bullet.body.setSize(30, 13, -9, 9);
+                }, this);
+                focusShotRT.bullets.forEachAlive(function(bullet) {
+                    bullet.damageAmount = weaponStats.waveShotDamage;
+                    bullet.body.setSize(30, 13, -9, 9);
+                }, this);
+
+                focusShotLT.fire();
+                focusShotRT.fire();
+                playerStats.weaponName = 'WAVE SHOT';
+                weaponText.render();
+            }
+            else if (playerHurtbox.alive && fireButton.isDown && !focusButton.isDown && playerStats.power >= 3000 && playerStats.power < 4000) {
+                 // Update weapon text: 'SPREAD SHOT'
+                singleShot.fire();
+                doubleShot.fire();
+
+                waveShotLT.bulletSpeed = weaponStats.spreadShotBulletSpeed;
+                waveShotLT.bulletAngleVariance = 20;
+                waveShotLT.fireRate = weaponStats.spreadShotBulletFireRate;
+                waveShotLT.bullets.forEachAlive(function(bullet) {
+                    bullet.damageAmount = weaponStats.spreadShotDamage;
+                    bullet.body.setSize(60, 13, -23, 24);
+                    bullet.scale.setTo(1, 1);
+                }, this);
+
+                waveShotRT.bulletSpeed = weaponStats.spreadShotBulletSpeed;
+                waveShotRT.bulletAngleVariance = 20;
+                waveShotRT.fireRate = weaponStats.spreadShotBulletFireRate;
+                waveShotRT.bullets.forEachAlive(function(bullet) {
+                    bullet.damageAmount = weaponStats.spreadShotDamage;
+                    bullet.body.setSize(60, 13, -23, 24);
+                    bullet.scale.setTo(1, 1);
+                }, this);
+
+                waveShotLT.fire();
+                waveShotRT.fire();
+                playerStats.weaponName = 'SPREAD SHOT';
+                weaponText.render();
+            }
+            else if (playerHurtbox.alive && fireButton.isDown && focusButton.isDown && playerStats.power >= 3000 && playerStats.power < 4000) {
+                // Focus 'SPREAD SHOT'
+                singleShot.fire();
+                doubleShot.fire();
+
+                focusShotLT.bullets.forEachAlive(function(bullet) {
+                    bullet.damageAmount = weaponStats.spreadShotDamage;
+                    bullet.body.setSize(30, 13, -9, 9);
+                }, this);
+                focusShotRT.bullets.forEachAlive(function(bullet) {
+                    bullet.damageAmount = weaponStats.spreadShotDamage;
+                    bullet.body.setSize(30, 13, -9, 9);
+                }, this);
+
+                focusShotLT.fire();
+                focusShotRT.fire();
+                playerStats.weaponName = 'SPREAD SHOT';
+                weaponText.render();
+            }
+            else if (playerHurtbox.alive && fireButton.isDown && !focusButton.isDown && playerStats.power >= 4000) {
+                singleShot.fire();
+                doubleShot.fire();
+
+                waveShotLT.bulletSpeed = weaponStats.maxPowerBulletSpeed;
+                waveShotLT.bulletAngleVariance = 20;
+                waveShotLT.fireRate = weaponStats.maxPowerBulletFireRate;
+                waveShotLT.bullets.forEachAlive(function(bullet) {
+                    bullet.damageAmount = weaponStats.maxPowerBulletDamage;
+                    bullet.body.setSize(60, 13, -23, 24);
+                    bullet.scale.setTo(1.5, 1.8);
+                }, this);
+
+                waveShotRT.bulletSpeed = weaponStats.maxPowerBulletSpeed;
+                waveShotRT.bulletAngleVariance = 20;
+                waveShotRT.fireRate = weaponStats.maxPowerBulletFireRate;
+                waveShotRT.bullets.forEachAlive(function(bullet) {
+                    bullet.damageAmount = weaponStats.maxPowerBulletDamage;
+                    bullet.body.setSize(60, 13, -23, 24);
+                    bullet.scale.setTo(1.5, 1.8);
+                }, this);
+
+                waveShotLT.fire();
+                waveShotRT.fire();
+                playerStats.weaponName = 'MAX POWER';
+                weaponText.render();
+            }
+            else if (playerHurtbox.alive && fireButton.isDown && focusButton.isDown && playerStats.power >= 4000) {
+                singleShot.fire();
+                doubleShot.fire();
+
+                focusShotLT.bullets.forEachAlive(function(bullet) {
+                    bullet.damageAmount = weaponStats.maxPowerBulletDamage;
+                    bullet.body.setSize(30, 13, -9, 9);
+                }, this);
+                focusShotRT.bullets.forEachAlive(function(bullet) {
+                    bullet.damageAmount = weaponStats.maxPowerBulletDamage;
+                    bullet.body.setSize(30, 13, -9, 9);
+                }, this);
+
+                focusShotLT.fire();
+                focusShotRT.fire();
+                playerStats.weaponName = 'MAX POWER';
+                weaponText.render();
+            }
+
+            if (playerHurtbox.alive && bombButton.isDown && playerStats.bomb > 0 && !playerStats.bombActive) {
+                playerStats.bombActive = true;
+                playerBombSFX.play();
+                var newBomb = playerBombs.create(playerHurtbox.body.x, playerHurtbox.body.y, 'playerBomb');
+                newBomb.anchor.setTo(0.5);
+                newBomb.outOfBoundsKill = true;
+                newBomb.checkWorldBounds = true;
+                newBomb.damageAmount = 24;
+                newBomb.body.immovable = true;
+                newBomb.body.velocity.x = 0;
+                newBomb.body.velocity.y = 0;
+                newBomb.body.setCircle(9, -1, -2);
+                revealCard(100, 450, -40, 0, 'playerCard'); // old y is 300
+                game.physics.arcade.moveToXY(newBomb, game.world.centerX, game.world.centerY);
+                playerStats.bomb--;
+                powerText.render();
+                bombText.render();
+                playerBombSFX.onStop.add(function() {
+                    playerStats.bombActive = false;
+                    playerStats.bombTimer = 0;
+                    clearGruntBullets();
+                    clearYuyukoBullets();
+                    bombExplode(newBomb.body.x, newBomb.body.y);
+                    newBomb.kill();
+                }, this);
+            }
+        }
+
+        function bombExplode(bombX, bombY) {
+            for (var i = 0; i < 8; i++) {
+                var bombPart = bombDispersal.create(bombX, bombY, 'bombExplode');
+                bombPart.anchor.setTo(0.5);
+                bombPart.outOfBoundsKill = true;
+                bombPart.checkWorldBounds = true;
+                bombPart.damageAmount = weaponStats.bombDamage;
+                bombPart.body.immovable = true;
+                bombPart.name = 'bombDispersal';
+                if (i === 0) {
+                    bombPart.body.velocity.y = -800;
+                }
+                else if (i === 1) {
+                    bombPart.body.velocity.x = 800;
+                    bombPart.body.velocity.y = -800;
+                }
+                else if (i === 2) {
+                    bombPart.body.velocity.x = 800;
+                }
+                else if (i === 3) {
+                    bombPart.body.velocity.x = 800;
+                    bombPart.body.velocity.y = 800;
+                }
+                else if (i === 4) {
+                    bombPart.body.velocity.y = 800;
+                }
+                else if (i === 5) {
+                    bombPart.body.velocity.x = -800;
+                    bombPart.body.velocity.y = 800;
+                }
+                else if (i === 6) {
+                    bombPart.body.velocity.x = -800;
+                }
+                else if (i === 7) {
+                    bombPart.body.velocity.x = -800;
+                    bombPart.body.velocity.y = -800;
+                }
+            }
+        }
+
+        function bombVacuum() {
+            if (playerStats.bombActive) {
+                //var tempBombSprite = playerBombs.getChildAt(playerBombs.length - 1);
+                var tempBombSprite = playerBombs.getFirstExists(true);
+                if (aimGruntWeapons.length > 0) {
+                    for (var i = 0; i < aimGruntWeapons.length; i++) {
+                            aimGruntWeapons[i].bullets.forEachAlive(function (aimGruntBullet) {
+                                game.physics.arcade.moveToObject(aimGruntBullet, tempBombSprite.body, 400);
+                            }, this);
+                    }
+                }
+                if (straightGruntWeapons.length > 0) {
+                    for (var j = 0; j < straightGruntWeapons.length; j++) {
+                            straightGruntWeapons[j].bullets.forEachAlive(function (straightGruntBullet) {
+                                game.physics.arcade.moveToObject(straightGruntBullet, tempBombSprite.body, 400);
+                            }, this);
+                    }
+                }
+                if (rotateGruntWeapons.length > 0) {
+                    for (var k = 0; k < rotateGruntWeapons.length; k++) {
+                            rotateGruntWeapons[k].bullets.forEachAlive(function (rotateGruntBullet) {
+                                game.physics.arcade.moveToObject(rotateGruntBullet, tempBombSprite.body, 400);
+                            }, this);
+                    }
+                }
+                bossTransition.forEachAlive(function(butterfly) {
+                    game.physics.arcade.moveToObject(butterfly, tempBombSprite.body, 600);
+                }, this);
+                bossWeaponNetherSignTracker.forEachAlive(function(netherBullet) {
+                    game.physics.arcade.moveToObject(netherBullet, tempBombSprite.body, 600);
+                }, this);
+                bossWeaponNetherRotationLT.bullets.forEachAlive(function(netherButterfly) {
+                    game.physics.arcade.moveToObject(netherButterfly, tempBombSprite.body, 600);
+                }, this);
+                bossWeaponNetherRotationRT.bullets.forEachAlive(function(netherButterfly) {
+                    game.physics.arcade.moveToObject(netherButterfly, tempBombSprite.body, 600);
+                }, this);
+                bossLaserExplode.forEachAlive(function(laserExplode) {
+                    game.physics.arcade.moveToObject(laserExplode, tempBombSprite.body, 600);
+                }, this);
+                bossWeaponBloomLT.bullets.forEachAlive(function(bloomBullet) {
+                    game.physics.arcade.moveToObject(bloomBullet, tempBombSprite.body, 600);
+                }, this);
+                bossWeaponBloomRT.bullets.forEachAlive(function(bloomBullet) {
+                    game.physics.arcade.moveToObject(bloomBullet, tempBombSprite.body, 600);
+                }, this);
+                // and any more boss weapons to vacuum
+            }
+        }
+
+        function bombCycloneCollide(bullet, bomb) {
+            bullet.kill();
+        }
+
+        function revealCard(x, y, xVel, yVel, spriteName) {
+            if (spriteName === 'playerCard') {
+                playerCardActive = true;
+                playerCard = game.add.sprite(x, y, spriteName);
+                game.physics.arcade.enable(playerCard);
+                playerCard.anchor.setTo(0.5);
+                playerCard.body.velocity.x = xVel;
+                playerCard.body.velocity.y = yVel;
+                playerCard.alpha = 0.7
+            }
+            else {
+                bossCardActive = true;
+                bossCard = game.add.sprite(x, y, spriteName);
+                game.physics.arcade.enable(bossCard);
+                bossCard.anchor.setTo(0.5);
+                bossCard.body.velocity.x = xVel;
+                bossCard.body.velocity.y = yVel;
+                bossCard.alpha = 0.7;
+            }
+        }
+        function burstSmallPower(spriteX, spriteY, spriteYvel, amount) {
+            smallP.x = spriteX;
+            smallP.y = spriteY;
+            smallP.setYSpeed(spriteYvel);
+            smallP.setRotation(0, 0);
+            smallP.start(true, 3500, null, amount);
+        }
+
+        function burstLargePower(spriteX, spriteY, spriteYvel, amount) {
+            largeP.x = spriteX;
+            largeP.y = spriteY;
+            largeP.setYSpeed(spriteYvel);
+            largeP.setRotation(0, 0);
+            largeP.start(true, 3500, null, amount);
+        }
+
+        function burstLaser(spriteX, spriteY, amount) {
+            bossLaserExplode.x = spriteX;
+            bossLaserExplode.y = spriteY;
+            bossLaserExplode.start(true, 4000, 0, amount, true); //Maybe could tone down to 3500 instead
+        }
+
+        // Display POC Line
+        function displayPOCLine() {
+            if (playerHurtbox.alive && pocLineText.visible === false && pocLine.visible === false && gameTimer <= 250) {
+                pocLineText.visible = true;
+                pocLine.visible = true;
+                fadeInPOCtext = game.add.tween(pocLineText);
+                fadeInPOCline = game.add.tween(pocLine);
+                fadeInPOCtext.to({alpha: 0}, 500, Phaser.Easing.Quintic.Out, false, 0, 5, true);
+                fadeInPOCline.to({alpha: 0.2}, 500, Phaser.Easing.Quintic.Out, false, 0, 5, true);
+                fadeInPOCtext.start();
+                fadeInPOCline.start();
+            }
+        }
+
+        // check POC Line Breach
+        function checkPOClineBreach() {
+            if (playerHurtbox.alive && playerSprite.body.y <= game.world.centerY/2) {
+                smallP.forEachAlive(function(smallPellet) {
+                    game.physics.arcade.moveToObject(smallPellet, playerSprite, 400);
+                });
+                largeP.forEachAlive(function(largePellet) {
+                    game.physics.arcade.moveToObject(largePellet, playerSprite, 400);
+                });
+            }
+        }
+        function playerPowerUp(player, p) {
+            p.kill();
+            if (p.key === 'smallP') {
+                playerStats.power += 50;
+                playerStats.score += 5;
+                scoreText.render();
+
+            }
+            else if (p.key === 'largeP') {
+                playerStats.power += 100;
+                playerStats.score += 10;
+                scoreText.render();
+            }
+
+            if (playerStats.power >= 4000) {
+                playerStats.power = 4000;
+            }
+
+            if (playerStats.power >= 0 && playerStats.power < 500 && playerStats.weaponName !== 'SINGLE SHOT') {
+                playerStats.weaponName = 'SINGLE SHOT';
+                weaponText.render();
+            }
+            else if (playerStats.power >= 500 && playerStats.power < 1000 && playerStats.weaponName !== 'DOUBLE SHOT') {
+                playerStats.weaponName = 'DOUBLE SHOT';
+                weaponText.render();
+            }
+            else if (playerStats.power >= 1000 && playerStats.power < 2000 && playerStats.weaponName !== 'TRIPLE SHOT') {
+                playerStats.weaponName = 'TRIPLE SHOT';
+                weaponText.render();
+            }
+            else if (playerStats.power >= 2000 && playerStats.power < 3000 && playerStats.weaponName !== 'WAVE SHOT') {
+                playerStats.weaponName = 'WAVE SHOT';
+                weaponText.render();
+            }
+            else if (playerStats.power >= 3000 && playerStats.weaponName !== 'SPREAD SHOT') {
+                playerStats.weaponName = 'SPREAD SHOT';
+                weaponText.render();
+            }
+            else if (playerStats.power >= 4000 && playerStats.weaponName !== 'MAX POWER') {
+                playerStats.weaponName = 'MAX POWER';
+                weaponText.render();
+            }
+            powerText.render();
+        }
+
+        function playerPowerNerf() {
+            playerStats.power = Math.floor(playerStats.power * 0.9);
+            if (playerStats.power < 0) {
+                playerStats.power = 0;
+            }
+            powerText.render();
+        }
+
+        function playerCollide(player, enemy) {
+            player.damage(1);
+            playerSprite.damage(1);
+            lifeText.render();
+            playerDeathSFX.play();
+            playerPowerNerf();
+            playerStats.score = Math.floor(playerStats.score * 0.75);
+            scoreText.render();
+            if (playerHurtbox.alive) {
+                playerStats.bomb = 2;
+                bombText.render();
+            }
+            player.body.x = 250; //250
+            player.body.y = 443.5 + 100; //443.5
+            playerSprite.body.x = 243; //243
+            playerSprite.body.y = 428 + 100; //428
+            clearGruntBullets();
+            if (bossSpawned) {
+                clearYuyukoBullets();
+                //clear bossLaserExplode particles;
+            }
+        }
+
+        // when sprite dies, its bullets linger and will still deal damage
+        // checks if player bullet collides with grunt
+        function bulletCollide(bullet, sprite) {
+            if (bullet !== undefined) {
+                bullet.kill();
+                sprite.damage(bullet.damageAmount);
+                playerStats.score += 5;
+                scoreText.render();
+                if (sprite.health <= 0) {
+                    var spriteX = sprite.body.x;
+                    var spriteY = sprite.body.y;
+                    var spriteYvel = sprite.body.velocity.y;
+                    if (sprite.name === 'aimGrunt') {
+                        burstSmallPower(spriteX, spriteY, spriteYvel, 5); // 250 Power
+                        burstLargePower(spriteX, spriteY, spriteYvel, 2); // 200 Power
+                        // Total Power Release: 450
+                        playerStats.score += 200;
+                        scoreText.render();
+                    }
+                    else if (sprite.name === 'rotateGrunt') {
+                        burstSmallPower(spriteX, spriteY, spriteYvel, 3); // 150 Power
+                        burstLargePower(spriteX, spriteY, spriteYvel, 5); // 500 Power
+                        // Total Power Release: 650
+                        playerStats.score += 250;
+                        scoreText.render();
+                    }
+                    else if (sprite.name === 'straightGrunt') {
+                        burstSmallPower(spriteX, spriteY, spriteYvel, 2); // 100 Power
+                        burstLargePower(spriteX, spriteY, spriteYvel, 1); // 100 Power
+                        // Total Power Release: 200
+                        playerStats.score += 50;
+                        scoreText.render();
+                    }
+                    var spriteDeathAnim = gruntDeaths.getFirstExists(false);
+                    spriteDeathAnim.reset(sprite.body.x + sprite.body.halfWidth, sprite.body.y + sprite.body.halfHeight);
+                    spriteDeathAnim.body.velocity.y = sprite.body.velocity.y;
+                    spriteDeathAnim.alpha = 1;
+                    spriteDeathAnim.play('gruntDeathExplode', 30, false, true);
+                    enemyDeathSFX.play();
+                }
+            }
+        }
+
+        function checkGruntBulletOverlap(gruntWeaponArray) {
+            // if there is exists a grunt weapon in the aimGruntWeapons array (means that an enemy has spawned as well), then check collision for each weapon
+            if (gruntWeaponArray.length > 0) {
+                for (var i = 0; i < gruntWeaponArray.length; i++) {
+                    //since its a group vs sprite, then first argument to gruntShotCollide is the sprite
+                    if (gruntWeaponArray[i] != null && !playerStats.bombActive) {
+                        game.physics.arcade.overlap(gruntWeaponArray[i].bullets, playerHurtbox, gruntShotCollide, null, this);
+                        // check collision with bomb explosion and enemy bullets
+                        if (bombDispersal.length > 0) {
+                            gruntWeaponArray[i].bullets.forEach(function(specificBullet) {
+                                game.physics.arcade.overlap(specificBullet, bombDispersal, bombCycloneCollide, null, this);
+                            }, this);
+                        }
+                    }
+                    else if (gruntWeaponArray[i] != null && playerStats.bombActive) {
+                            gruntWeaponArray[i].bullets.forEachAlive(function(specificBullet) {
+                                game.physics.arcade.overlap(specificBullet, playerBombs, bombCycloneCollide, null, this);
+                            }, this);
+                    }
+                }
+            }
+        }
+
+        // if grunt bullet collides with player
+        function gruntShotCollide(player, bullet) {
+            player.damage(bullet.damageAmount);
+            playerSprite.damage(bullet.damageAmount);
+            lifeText.render();
+            playerDeathSFX.play();
+            playerPowerNerf();
+            playerStats.score = Math.floor(playerStats.score * 0.75);
+            scoreText.render();
+            if (playerHurtbox.alive) {
+                playerStats.bomb = 2;
+                bombText.render();
+            }
+            player.body.x = 250; //250
+            player.body.y = 443.5 + 100; //443.5
+            playerSprite.body.x = 243; //243
+            playerSprite.body.y = 428 + 100; //428
+            clearGruntBullets();
+            // start gameover state here
+        }
+
+        // perfect now
+        function spawnAimGrunt(x, y, velocityX, velocityY, spriteName, weaponName) {
+            var newGrunt = aimGrunts.create(x, y, spriteName);
+            newGrunt.anchor.setTo(0.5);
+            newGrunt.outOfBoundsKill = true;
+            newGrunt.checkWorldBounds = true;
+            newGrunt.setHealth(enemyStats.aimGruntHP);
+            newGrunt.damageAmount = 1;
+            newGrunt.body.immovable = true;
+            newGrunt.body.velocity.x = velocityX;
+            newGrunt.body.velocity.y = velocityY;
+            newGrunt.name = 'aimGrunt';
+
+            var newWeapon = game.add.weapon(30, weaponName);
+            newWeapon.bulletSpeed = enemyWeapon.gruntBulletSpeed;
+            newWeapon.bulletAngleOffset = enemyWeapon.aimGruntBulletAngleOffset;
+            newWeapon.fireRate = enemyWeapon.gruntBulletFireRate;
+            newWeapon.bullets.forEach(function(bullet) {
+                bullet.damageAmount = 1;
+            });
+            newWeapon.trackSprite(newGrunt, 0, 0);
+            aimGruntWeapons.push(newWeapon);
+            aimGruntWeaponDIS.push(newGrunt.events.onKilled.add(checkGruntKill, this, this, aimGrunts));
+        }
+
+        // perfect now
+        function spawnRotateGrunt(x, y, velocityX, velocityY, spriteName, weaponName, clockwise, explosive) {
+            var newGrunt = rotateGrunts.create(x, y, spriteName);
+            newGrunt.anchor.setTo(0.5);
+            newGrunt.outOfBoundsKill = true;
+            newGrunt.checkWorldBounds = true;
+            newGrunt.setHealth(enemyStats.rotateGruntHP);
+            newGrunt.damageAmount = 1;
+            newGrunt.body.immovable = true;
+            newGrunt.body.velocity.x = velocityX;
+            newGrunt.body.velocity.y = velocityY;
+            newGrunt.name = 'rotateGrunt';
+
+            var newWeapon = game.add.weapon(80, weaponName);
+            newWeapon.bulletAngleOffset = enemyWeapon.gruntBulletAngleOffset;
+            if (explosive) {
+                newGrunt.setHealth(8);
+                newWeapon.bulletSpeed = enemyWeapon.gruntExplosiveRotateBulletSpeed;
+                newWeapon.fireRate = enemyWeapon.gruntExplosiveRotateFireRate;
+            }
+            else {
+                newWeapon.bulletSpeed = enemyWeapon.gruntRotateBulletSpeed;
+                newWeapon.fireRate = enemyWeapon.gruntRotateBulletFireRate;
+            }
+            newWeapon.bullets.forEach(function(bullet) {
+                bullet.damageAmount = 1;
+            });
+            newWeapon.trackSprite(newGrunt, 0, 0);
+            rotateGruntWeapons.push(newWeapon);
+            rotateGruntWeaponDIS.push(newGrunt.events.onKilled.add(checkGruntKill, this, this, rotateGrunts));
+            rotateGruntTimers.push(0);
+            if (clockwise) {
+                counterClockwiseShootID.push(rotateGruntWeapons.length - 1);
+            }
+        }
+
+        function spawnStraightGrunt(x, y, velocityX, velocityY, spriteName, weaponName, moving) {
+            var newGrunt = straightGrunts.create(x, y, spriteName);
+            newGrunt.anchor.setTo(0.5);
+            newGrunt.outOfBoundsKill = true;
+            newGrunt.checkWorldBounds = true;
+            newGrunt.setHealth(enemyStats.straightGruntHP);
+            newGrunt.damageAmount = 1;
+            newGrunt.body.immovable = true;
+            newGrunt.body.velocity.x = velocityX;
+            newGrunt.body.velocity.y = velocityY;
+            newGrunt.name = 'straightGrunt';
+
+            // hitbox testing
+            //newGrunt.body.setCircle(13, 3.5, 3);
+
+            var newWeapon = game.add.weapon(30, weaponName);
+            newWeapon.bulletAngleOffset = enemyWeapon.gruntBulletAngleOffset;
+            if (moving) {
+                newWeapon.bulletSpeed = enemyWeapon.movingGruntStraightBulletSpeed;
+                newWeapon.fireRate = enemyWeapon.movingGruntStraightBulletFireRate;
+            }
+            else {
+                newWeapon.bulletSpeed = enemyWeapon.gruntStraightBulletSpeed;
+                newWeapon.fireRate = enemyWeapon.gruntStraightBulletFireRate;
+            }
+            newWeapon.bullets.forEach(function(bullet) {
+                bullet.damageAmount = 1;
+                bullet.body.setCircle(13, 2.5, 4);
+            });
+            newWeapon.trackSprite(newGrunt, 0, 0);
+            straightGruntWeapons.push(newWeapon);
+            straightGruntWeaponDIS.push(newGrunt.events.onKilled.add(checkGruntKill, this, this, straightGrunts));
+        }
+
+        // aimGruntFire
+        function gruntFireSprite(gruntGroup, gruntWeaponArray, gruntWeaponDIS) {
+            // if player is a live and aimGruntWeapons exist shoot every weapon at the player
+            if (playerHurtbox.alive && gruntWeaponArray.length > 0) {
+                for (var i = 0; i < gruntWeaponArray.length; i++) {
+                    // shoot at player when self is healthy and its onKilled signal hasn't been called
+                    if (gruntGroup.getChildAt(i).health > 0 && gruntWeaponDIS[i].callCount <= 0) {
+                        gruntWeaponArray[i].fireAtSprite(playerHurtbox);
+                    }
+                }
+            }
+        }
+
+        // straightGruntFire
+        function gruntStraightFire(gruntGroup, gruntWeaponArray, gruntWeaponDIS) {
+            if (playerHurtbox.alive && gruntWeaponArray.length > 0) {
+                for (var i = 0; i < gruntWeaponArray.length; i++) {
+                    // shoot at player when self is healthy and its onKilled signal hasn't been called
+                    if (gruntGroup.getChildAt(i).health > 0 && gruntWeaponDIS[i].callCount <= 0) {
+                        //gruntWeaponArray[i].fire(null, gruntGroup.getChildAt(i).body.x + 22, game.world.height);
+                        gruntWeaponArray[i].fireAngle = 90;
+                        //gruntWeaponArray[i].bullets.setAll('body.velocity.x', 0);
+                        gruntWeaponArray[i].fire();
+                    }
+                }
+            }
+        }
+
+        // rotateGruntFire
+        function gruntRotateFire(gruntGroup, gruntWeaponArray, gruntWeaponDIS) {
+            if (playerHurtbox.alive && gruntWeaponArray.length > 0) {
+                for (var i = 0; i < gruntWeaponArray.length > 0; i++) {
+                    if (gruntGroup.getChildAt(i).health > 0 && gruntWeaponDIS[i].callCount <= 0) {
+                        if (rotateGruntTimers[i] == 0) {
+                            gruntWeaponArray[i].fire();
+                            rotateGruntTimers[i] = game.time.now + gruntWeaponArray[i].fireRate;
+                        }
+                        if (game.time.now > rotateGruntTimers[i]) {
+                            gruntWeaponArray[i].fire();
+                            rotateGruntTimers[i] = game.time.now + gruntWeaponArray[i].fireRate;
+                            if (counterClockwiseShootID.length > 0) {
+                                for (var j = 0; j < counterClockwiseShootID.length; j++) {
+                                    if (i === counterClockwiseShootID[j]) {
+                                        gruntWeaponArray[i].fireAngle -= 25;
+                                    }
+                                    else {
+                                        gruntWeaponArray[i].fireAngle += 25;
+                                    }
+                                }
+                            }
+                            else {
+                                gruntWeaponArray[i].fireAngle += 25;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function clearGruntBullets() {
+            if (aimGruntWeapons.length > 0) {
+                for (var i = 0; i < aimGruntWeapons.length; i++) {
+                    aimGruntWeapons[i].killAll();
+                }
+            }
+            if (straightGruntWeapons.length > 0) {
+                for (var j = 0; j < straightGruntWeapons.length; j++) {
+                    straightGruntWeapons[j].killAll();
+                }
+            }
+            if (rotateGruntWeapons.length > 0) {
+                for (var k = 0; k < rotateGruntWeapons.length; k++) {
+                    rotateGruntWeapons[k].killAll();
+
+                }
+            }
+        }
+        function checkGruntKill(grunt, gruntGroup) {
+            return gruntGroup.getChildIndex(grunt);
+        }
+
+        // Boss - Yuyuko Saigyouji
+        function getRandomTransitions(tempMin, tempMax) {
+            var min = Math.ceil(tempMin);
+            var max = Math.floor(tempMax);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function getRandButterflyPoztn(tempMinX, tempMinY, tempMaxX, tempMaxY) {
+            trnznData.trnznRandX = getRandomTransitions(tempMinX, tempMaxX);
+            trnznData.trnznRandY = getRandomTransitions(tempMinY, tempMaxY);
+        }
+
+        function getRandOrbPoztn(tempMinX, tempMinY, tempMaxX, tempMaxY) {
+            netherBulletData.netherRandX = getRandomTransitions(tempMinX, tempMaxX);
+            netherBulletData.netherRandY = getRandomTransitions(tempMinY, tempMaxY);
+        }
+
+        function bossSpawnButterfly(x, y, xVel, yVel, spriteName, groupName, isBorder, angle) {
+            if (!isBorder) {
+                var newButterfly = groupName.create(x, y, spriteName);
+                newButterfly.anchor.setTo(0.5);
+                newButterfly.outOfBoundsKill = true;
+                newButterfly.checkWorldBounds = true;
+                newButterfly.damageAmount = 1;
+                newButterfly.body.immovable = true;
+                newButterfly.body.velocity.x = xVel;
+                newButterfly.body.velocity.y = yVel;
+                newButterfly.body.setCircle(6, 7.4, 10.5); // Perfect hitbox now
+                newButterfly.angle = 90;
+            }
+            else {
+                var tempChild = groupName.getFirstExists(false);
+                if (tempChild !== null) {
+                    tempChild.reset(x, y);
+                    tempChild.anchor.setTo(0.5);
+                    tempChild.body.velocity.x = xVel;
+                    tempChild.body.velocity.y = yVel;
+                    tempChild.angle = angle;
+                    console.log(tempChild.body.x);
+                }
+            }
+        }
+
+        function bossSpawnNetherBullet(x, y, xVel, yVel, spriteName, groupName, follow) {
+            var newNetherBullet = groupName.create(x, y, spriteName);
+            newNetherBullet.anchor.setTo(0.5);
+            newNetherBullet.outOfBoundsKill = true;
+            newNetherBullet.checkWorldBounds = true;
+            newNetherBullet.damageAmount = 1;
+            newNetherBullet.body.immovable = true;
+            newNetherBullet.body.velocity.x = xVel;
+            newNetherBullet.body.velocity.y = yVel;
+            newNetherBullet.body.setCircle(13, 3.5, 3);
+
+            if (follow) {
+                game.physics.arcade.moveToObject(newNetherBullet, playerHurtbox, 100);
+            }
+
+        }
+
+        function bossSpawnLaser(x, y, xVel, yVel, spriteName, groupName, angle) {
+            var newLaser = groupName.create(x, y, spriteName);
+            newLaser.anchor.setTo(0.5);
+            newLaser.outOfBoundsKill = true;
+            newLaser.checkWorldBounds = true;
+            newLaser.damageAmount = 1;
+            newLaser.body.immovable = true;
+            newLaser.body.velocity.x = xVel;
+            newLaser.body.velocity.y = yVel;
+            newLaser.scale.setTo(2, 1.3);
+            // NE - (206, -130)
+            // SE - (206, 130)
+            // SW - (37, 130)
+            // W - (0, 0)
+            if (angle === 225) {
+                newLaser.body.setSize(5, (10/1.3), 206, 130);
+            }
+            else if (angle === 135) {
+                newLaser.body.setSize(5, (10)/1.3, 206, -130);
+            }
+            else if (angle === 0) {
+                newLaser.body.setSize(5, (10/1.3), 0, 0);
+            }
+            newLaser.angle = angle;
+        }
+
+        function spawnYuyuko() {
+            bossBGM.loop = true;
+            bossBGM.play();
+            yuyukoBoss = game.add.sprite((game.world.width/2), 140, 'yuyuko'); //512 x 256
+            game.physics.arcade.enable(yuyukoBoss);
+            yuyukoBoss.anchor.setTo(0.5);
+            yuyukoBoss.body.setSize(137, 185, 185, 0);
+            yuyukoBoss.health = bossMaxHP; //60
+            yuyukoBoss.damageAmount = 1;
+            yuyukoBoss.body.immovable = true;
+            yuyukoBoss.bringToTop();
+            bossSpawned = true;
+            var bgBar = new HealthBar(game, {x: 256, y: 25, width: 502, height: 12, bar: {color: '#0045fd'}});
+            bossHPbar = new HealthBar(game, {x: 256, y: 25, width: 500, height: 10, bar: {color: '#BDABFF'}, bg: {color: '#000000'}});
+            bossHPbar.bgSprite.alpha = 0.8;
+            bossText = game.add.text(10, 3, 'Yuyuko Saigyouji', { font: '12px Arial', fill: '#ff4500' });
+            bossText.render = function(newText) {
+                bossText.text = newText;
+            };
+            yuyukoBoss.events.onKilled.add(function() {
+                bossBGM.stop();
+                clearYuyukoBullets();
+                clearYuyukoBullets();
+                killedBoss = true;
+            }, this);
+
+        }
+
+        function yuyukoFloat() {
+            if (!yuyukoFloatUp) {
+                yuyukoBoss.body.velocity.y = 10;
+            }
+            else if (yuyukoFloatUp) {
+                yuyukoBoss.body.velocity.y = -10;
+            }
+            if (yuyukoBoss.body.y <= 12) {
+                yuyukoFloatUp = false;
+            }
+            else if (yuyukoBoss.body.y >= 20) {
+                yuyukoFloatUp = true;
+            }
+        }
+
+        function yuyukoShotCollide(sprite, bullet) {
+            if (bullet !== undefined) {
+                bullet.kill();
+                yuyukoBoss.damage(bullet.damageAmount);
+                playerStats.score += 5;
+                scoreText.render();
+                //update health here
+                var tempCurrentHPratio = (sprite.health/bossMaxHP) * 100;
+                bossHPbar.setPercent(tempCurrentHPratio);
+                if (sprite.health <= 0) {
+                    var spriteDeathAnim = gruntDeaths.getFirstExists(false);
+                    spriteDeathAnim.reset(sprite.body.x + sprite.body.halfWidth, sprite.body.y + sprite.body.halfHeight);
+                    spriteDeathAnim.body.velocity.y = sprite.body.velocity.y;
+                    spriteDeathAnim.alpha = 1;
+                    spriteDeathAnim.play('gruntDeathExplode', 30, false, true);
+                    bossDeathSFX.play();
+                }
+            }
+        }
+
+        function checkYuyukoHealthAndShoot() {
+            // Update Name on Health
+            if (bossText.text === 'Yuyuko Saigyouji' && yuyukoBoss.health <= 5000 && yuyukoBoss.health >= 4001) {
+                clearYuyukoBullets();
+            }
+            else if (bossText.text === 'Yuyuko Saigyouji: \'Nether Sign\' Passage to the Netherworld' && yuyukoBoss.health <= 4000 && yuyukoBoss.health >= 3001) {
+                // clear spell card's bullets here
+                clearYuyukoBullets();
+            }
+            else if (bossText.text === 'Yuyuko Saigyouji' && yuyukoBoss.health <= 3000 && yuyukoBoss.health >= 2001) {
+                clearYuyukoBullets();
+            }
+            else if (bossText.text === 'Yuyuko Saigyouji: \'Ghost Sign\' Flight of the Butterflies'
+                    && yuyukoBoss.health <= 2000 && yuyukoBoss.health >= 1001) {
+                // clear spell card's bullets here
+                clearYuyukoBullets();
+            }
+            else if (bossText.text === 'Yuyuko Saigyouji' && yuyukoBoss.health <= 1000 && yuyukoBoss.health >= 0) {
+                clearYuyukoBullets();
+            }
+
+            // SHOOTING HAPPENS HERE 1337
+            if (yuyukoBoss.health <= 6000 && yuyukoBoss.health >= 5001) {
+                // 1st transition here
+                if (trnznData.trnznTimer % 74 === 0 && trnznData.trnznTimer % 148 === 0) {
+                    bossButterflySFX.play();
+                }
+                if (trnznData.trnznTimer % 17 === 0) {
+                    for (var j = 0; j < 6; j++) {
+                        getRandButterflyPoztn(0, 0, 512, 600);
+                        bossSpawnButterfly(trnznData.trnznRandX, 2, 0, 75, 'butterflyCyan', bossTransition, false, 0);
+                    }
+                }
+                bossTransition.callAll('bringToTop');
+            }
+            else if (yuyukoBoss.health <= 5000 && yuyukoBoss.health >= 4001 && bossPause) {
+                if (bossPauseTimer === 0) {
+                    bossTransition.destroy(true, true);
+                    canHitBoss = false;
+                    phaseDefeatSFX.play();
+                }
+                bossPauseTimer++;
+                if (bossPauseTimer >= 100) {
+                    bossPause = false;
+                    yuyukoBoss.health = 5000;
+                    revealCard(425, 450, 40, 0, 'bossCard');
+                    phaseActivateSFX.play();
+                    canHitBoss = true;
+                    // show boss card tween
+
+                }
+            }
+            else if (yuyukoBoss.health <= 5000 && yuyukoBoss.health >= 4001 && !bossPause) {
+                bossPauseTimer = 0;
+                // 1st SPELL CARD
+                bossText.render('Yuyuko Saigyouji: \'Nether Sign\' Passage to the Netherworld');
+                if (trnznData.trnznTimer % 74 === 0 && trnznData.trnznTimer % 148 === 0) {
+                    bossButterflySFX.play();
+                }
+                if (trnznData.trnznTimer % 30 === 0) {
+                    bossSpawnNetherBullet(playerHurtbox.body.x, 150, 0, 100, 'yuyukoOrb', bossWeaponNetherSignTracker, false);
+                    /*bossWeaponNetherRotationLT.fire();
+                    bossWeaponNetherRotationRT.fire();*/
+                }
+                if (trnznData.trnznTimer % 25 === 0) {
+                    getRandOrbPoztn(0, 0, 512, 400);
+                    bossSpawnNetherBullet(netherBulletData.netherRandX, netherBulletData.netherRandY, 0, 0, 'yuyukoOrb', bossWeaponNetherSignTracker, true);
+                }
+                bossWeaponNetherRotationLT.fire();
+                bossWeaponNetherRotationRT.fire();
+            }
+            else if (yuyukoBoss.health <= 4000 && yuyukoBoss.health >= 3001 && !bossPause) {
+                if (bossPauseTimer === 0) {
+                    bossTransition.destroy(true, true);
+                    canHitBoss = false;
+                    phaseDefeatSFX.play();
+                }
+                bossPauseTimer++;
+                if (bossPauseTimer >= 100) {
+                    bossPause = true;
+                    yuyukoBoss.health = 4000;
+                    canHitBoss = true;
+                    // show boss card tween
+
+                }
+            }
+            else if (yuyukoBoss.health <= 4000 && yuyukoBoss.health >= 3001 && bossPause) {
+                bossPauseTimer = 0;
+                // 2nd transition here
+                bossText.render('Yuyuko Saigyouji');
+                if (trnznData.trnznTimer % 74 === 0 && trnznData.trnznTimer % 148 === 0) {
+                    bossButterflySFX.play();
+                }
+                if (trnznData.trnznTimer % 17 === 0) {
+                    // can definitely clean this up later
+                    for (var k = 0; k < 6; k++) {
+                        getRandButterflyPoztn(0, 0, 512, 600);
+                        bossSpawnButterfly(trnznData.trnznRandX, 2, 0, 75, 'butterflyCyan', bossTransition, false, 0);
+                        getRandButterflyPoztn(0, 0, 512, 600);
+                        bossSpawnButterfly(trnznData.trnznRandX, 2, 0, 75, 'butterflyGreen', bossTransition, false, 0);
+                    }
+                }
+            }
+            else if (yuyukoBoss.health <= 3000 && yuyukoBoss.health >= 2001 && bossPause) {
+                if (bossPauseTimer === 0) {
+                    bossTransition.destroy(true, true);
+                    canHitBoss = false;
+                    phaseDefeatSFX.play();
+                }
+                bossPauseTimer++;
+                if (bossPauseTimer >= 100) {
+                    bossPause = false;
+                    yuyukoBoss.health = 3000;
+                    revealCard(425, 450, 40, 0, 'bossCard');
+                    phaseActivateSFX.play();
+                    canHitBoss = true;
+                    // show boss card tween
+
+                }
+            }
+            else if (yuyukoBoss.health <= 3000 && yuyukoBoss.health >= 2001 && !bossPause) {
+                bossPauseTimer = 0;
+                bossText.render('Yuyuko Saigyouji: \'Ghost Sign\' Flight of the Butterflies');
+                if (trnznData.trnznTimer % 74 === 0 && trnznData.trnznTimer % 148 === 0) {
+                    bossLaserSFX.play();
+                    if (bossLaserSelection === 0) {
+                        bossSpawnLaser(-123, 579, 800, -800, 'yuyukoLaser', bossLasers, 135); //PERFECT SHOOTING NE
+                        bossLaserSelection++;
+                    }
+                    else if (bossLaserSelection === 1) {
+                        bossSpawnLaser(-123, -179, 800, 800, 'yuyukoLaser', bossLasers, 225); //PERFECT SHOOTING SE
+                        bossLaserSelection++;
+                    }
+                    else {
+                        bossSpawnLaser(691, 500, -800, 0, 'yuyukoLaser', bossLasers, 0); //PERFECT SHOOTING W
+                        bossLaserSelection = 0;
+                    }
+                }
+            }
+            else if (yuyukoBoss.health <= 2000 && yuyukoBoss.health >= 1001 && !bossPause) {
+                if (bossPauseTimer === 0) {
+                    canHitBoss = false;
+                    phaseDefeatSFX.play();
+                }
+                bossPauseTimer++;
+                if (bossPauseTimer >= 100) {
+                    bossPause = true;
+                    yuyukoBoss.health = 2000;
+                    phaseActivateSFX.play();
+                    canHitBoss = true;
+
+                }
+            }
+            else if (yuyukoBoss.health <= 2000 && yuyukoBoss.health >= 1001 && bossPause) {
+                bossPauseTimer = 0;
+                // 3rd transition here
+                bossText.render('Yuyuko Saigyouji');
+                if (trnznData.trnznTimer % 74 === 0 && trnznData.trnznTimer % 148 === 0) {
+                    bossButterflySFX.play();
+                }
+                if (trnznData.trnznTimer % 34 === 0) {
+                    for (var i = 0; i < 3; i++) {
+                        getRandButterflyPoztn(0, 0, 512, 600);
+                        bossSpawnButterfly(trnznData.trnznRandX, 2, 0, 75, 'butterflyRed', bossTransition, false, 0);
+                        getRandButterflyPoztn(0, 0, 512, 600);
+                        bossSpawnButterfly(trnznData.trnznRandX, 2, 0, 75, 'butterflyPurple', bossTransition, false, 0);
+                        getRandButterflyPoztn(0, 0, 512, 600);
+                        bossSpawnButterfly(trnznData.trnznRandX, 2, 0, 75, 'butterflyBlue', bossTransition, false, 0);
+                        getRandButterflyPoztn(0, 0, 512, 600);
+                        bossSpawnButterfly(trnznData.trnznRandX, 2, 0, 75, 'butterflyGreen', bossTransition, false, 0);
+                        getRandButterflyPoztn(0, 0, 512, 600);
+                        bossSpawnButterfly(trnznData.trnznRandX, 2, 0, 75, 'butterflyBlack', bossTransition, false, 0);
+                    }
+                }
+            }
+            else if (yuyukoBoss.health <= 1000 && yuyukoBoss.health >= 0 && bossPause) {
+                if (bossPauseTimer === 0) {
+                    canHitBoss = false;
+                    bossTransition.destroy(true, true);
+                    phaseDefeatSFX.play();
+                }
+                bossPauseTimer++;
+                if (bossPauseTimer >= 100) {
+                    bossPause = false;
+                    yuyukoBoss.health = 1000;
+                    revealCard(425, 450, 40, 0, 'bossCard');
+                    phaseActivateSFX.play();
+                    canHitBoss = true;
+
+                }
+            }
+            else if (yuyukoBoss.health <= 1000 && yuyukoBoss.health >= 0 && !bossPause) {
+                bossText.render('Yuyuko Saigyouji: \'Bloom Nobly\' Border of Life');
+
+                // BORDER STUFF HERE
+                // 1st layer of butterfly border
+
+                if (game.time.now > bossWeaponBorderTimer && !killedBoss) {
+                    bossSpawnButterfly(20, 2, 0, 100, 'butterflyRed', bossBorderRed, true, 90);
+                    bossSpawnButterfly(492, 598, 0, -100, 'butterflyRed', bossBorderRed, true, 270);
+
+                    bossSpawnButterfly(40, 598, 0, -100, 'butterflyYellow', bossBorderYellow, true, 270);
+                    bossSpawnButterfly(472, 2, 0, 100, 'butterflyYellow', bossBorderYellow, true, 90);
+
+                    bossSpawnButterfly(60, 2, 0, 100, 'butterflyGreen', bossBorderGreen, true, 90);
+                    bossSpawnButterfly(452, 598, 0, -100, 'butterflyGreen', bossBorderGreen, true, 270);
+
+                    bossSpawnButterfly(80, 598, 0, -100, 'butterflyBlue', bossBorderBlue, true, 270);
+                    bossSpawnButterfly(432, 2, 0, 100, 'butterflyBlue', bossBorderBlue, true, 90);
+                    bossWeaponBorderTimer = game.time.now + 800;
+                    console.log('spawned');
+                }
+
+                // Bloom Weapons
+                if (bossWeaponBloomTimer === 0 && !killedBoss) {
+                    bossWeaponBloomLT.fire();
+                    bossWeaponBloomRT.fire();
+                    bossWeaponBloomTimer = game.time.now + bossWeaponBloomFireRate;
+                }
+                else if (game.time.now > bossWeaponBloomTimer && !killedBoss) {
+                    bossWeaponBloomLT.fireAngle += 25;
+                    bossWeaponBloomRT.fireAngle -= 25;
+                    bossWeaponBloomLT.fire();
+                    bossWeaponBloomRT.fire();
+                    bossWeaponBloomTimer = game.time.now + bossWeaponBloomFireRate;
+                }
+            }
+            else if (yuyukoBoss.health <= 0) {
+                // clear screen
+                clearYuyukoBullets();
+                //and clear border butterflies
+                bossBGM.pause();
+                //ending screen here
+            }
+            trnznData.trnznTimer++;
+            trnznData.trnznSFXTimer++;
+        }
+
+        function clearYuyukoBullets() {
+            bossTransition.callAllExists('kill', true);
+            bossWeaponNetherRotationLT.bullets.callAllExists('kill', true);
+            bossWeaponNetherRotationRT.bullets.callAllExists('kill', true);
+            bossWeaponNetherSignTracker.callAllExists('kill', true);
+            bossLasers.callAllExists('kill', true);
+            bossLaserExplode.callAllExists('kill', true);
+            bossWeaponBloomLT.bullets.callAllExists('kill', true);
+            bossWeaponBloomRT.bullets.callAllExists('kill', true);
+            // and any other boss weapons
+        }
+        // Stage 01
+        function startStageOne() {
+            switch(gameTimer) {
+                case 200:
+                    spawnStraightGrunt(256, 10, 0, enemyStats.gruntStraightVelocity, 'gruntStraightBlue', 'straightGruntShot', false);
+                    break;
+                case 250:
+                    spawnStraightGrunt(128, 10, 0, enemyStats.gruntStraightVelocity, 'gruntStraightBlue', 'straightGruntShot', false);
+                    spawnStraightGrunt(256, 10, 0, enemyStats.gruntStraightVelocity, 'gruntStraightBlue', 'straightGruntShot', false);
+                    spawnStraightGrunt(384, 10, 0, enemyStats.gruntStraightVelocity, 'gruntStraightBlue', 'straightGruntShot', false);
+                    fadeInPOCtext.stop();
+                    fadeInPOCline.stop();
+                    pocLineText.visible = false;
+                    pocLine.visible = false;
+                    break;
+                case 320:
+                    spawnAimGrunt(200, 10, 0, enemyStats.gruntStraightVelocity, 'gruntAimBlue', 'aimGruntShot');
+                    spawnAimGrunt(312, 10, 0, enemyStats.gruntStraightVelocity, 'gruntAimBlue', 'aimGruntShot');
+                    break;
+                case 550:
+                    spawnStraightGrunt(500, 10, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightRed', 'straightGruntShot', true);
+                    break;
+                case 600:
+                    spawnStraightGrunt(500, 10, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightRed', 'straightGruntShot', true);
+                    break;
+                case 620:
+                    spawnStraightGrunt(10, 10, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightBlue', 'straightGruntShot', true);
+                    break;
+                case 650:
+                    spawnStraightGrunt(500, 10, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightRed', 'straightGruntShot', true);
+                    break;
+                case 670:
+                    spawnStraightGrunt(10, 10, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightBlue', 'straightGruntShot', true);
+                    break;
+                case 685:
+                    spawnAimGrunt(128, 10, 0, enemyStats.gruntStraightVelocity, 'gruntAimRed', 'aimGruntShot');
+                    spawnAimGrunt(384, 10, 0, enemyStats.gruntStraightVelocity, 'gruntAimBlue', 'aimGruntShot');
+                    break;
+                case 700:
+                    spawnStraightGrunt(500, 10, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightRed', 'straightGruntShot', true);
+                    break;
+                case 720:
+                    spawnStraightGrunt(10, 10, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightBlue', 'straightGruntShot', true);
+                    break;
+                case 750:
+                    spawnStraightGrunt(500, 10, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightRed', 'straightGruntShot', true);
+                    break;
+                case 770:
+                    spawnStraightGrunt(10, 10, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightBlue', 'straightGruntShot', true);
+                    break;
+                case 820:
+                    spawnStraightGrunt(10, 10, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightBlue', 'straightGruntShot', true);
+                    break;
+                case 870:
+                    spawnRotateGrunt(50, 10, 0, enemyStats.gruntStraightVelocity, 'gruntRotate', 'rotateGruntShot', true, false);
+                    break;
+                case 950:
+                    spawnRotateGrunt(462, 10, 0, enemyStats.gruntStraightVelocity, 'gruntRotate', 'rotateGruntShot', false, false);
+                    break;
+                case 1150:
+                    spawnRotateGrunt(500, 100, -enemyStats.movingGruntStraightXVelocity, 0, 'gruntRotate', 'rotateGruntShot', true, false);
+                    break;
+                case 1170:
+                    spawnRotateGrunt(500, 100, -enemyStats.movingGruntStraightXVelocity, 0, 'gruntRotate', 'rotateGruntShot', true, false);
+                    break;
+                case 1210:
+                    spawnRotateGrunt(500, 100, -enemyStats.movingGruntStraightXVelocity, 0, 'gruntRotate', 'rotateGruntShot', true, false);
+                    break;
+                case 1230:
+                    spawnRotateGrunt(500, 100, -enemyStats.movingGruntStraightXVelocity, 0, 'gruntRotate', 'rotateGruntShot', true, false);
+                    break;
+                case 1500:
+                    spawnRotateGrunt(480, 10, 0, 500, 'gruntRotate', 'rotateGruntShot', true, true);
+                    spawnRotateGrunt(32, 10, 0, 500, 'gruntRotate', 'rotateGruntShot', false, true);
+                    break;
+                case 1600:
+                    spawnRotateGrunt(448, 10, 0, 600, 'gruntRotate', 'rotateGruntShot', true, true);
+                    spawnRotateGrunt(64, 10, 0, 600, 'gruntRotate', 'rotateGruntShot', false, true);
+                    break;
+                case 1700:
+                    spawnRotateGrunt(416, 10, 0, 700, 'gruntRotate', 'rotateGruntShot', true, true);
+                    spawnRotateGrunt(96, 10, 0, 700, 'gruntRotate', 'rotateGruntShot', false, true);
+                    break;
+                case 1800:
+                    spawnRotateGrunt(384, 10, 0, 800, 'gruntRotate', 'rotateGruntShot', true, true);
+                    spawnRotateGrunt(128, 10, 0, 800, 'gruntRotate', 'rotateGruntShot', false, true);
+                    break;
+                case 1900:
+                    spawnRotateGrunt(224, 10, 0, 800, 'gruntRotate', 'rotateGruntShot', false, true);
+                    spawnRotateGrunt(288, 10, 0, 800, 'gruntRotate', 'rotateGruntShot', true, true);
+                    break;
+                case 2150:
+                    spawnAimGrunt(500, 40, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    spawnAimGrunt(500, 120, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    break;
+                case 2300:
+                    spawnAimGrunt(500, 40, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    spawnAimGrunt(500, 120, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    break;
+                case 2450:
+                    spawnAimGrunt(500, 40, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    spawnAimGrunt(500, 120, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    break;
+                case 2600:
+                    spawnAimGrunt(500, 40, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    spawnAimGrunt(500, 120, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    break;
+                case 2750:
+                    spawnAimGrunt(500, 40, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    spawnAimGrunt(500, 120, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    break;
+                case 2800:
+                    spawnAimGrunt(10, 40, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    spawnAimGrunt(10, 120, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    break;
+                case 2900:
+                    spawnAimGrunt(10, 40, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    spawnAimGrunt(10, 120, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    break;
+                case 3000:
+                    spawnAimGrunt(10, 40, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    spawnAimGrunt(10, 120, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    break;
+                case 3100:
+                    spawnAimGrunt(10, 40, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    spawnAimGrunt(10, 120, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntAimBlue', 'aimGruntShot');
+                    break;
+                case 3350:
+                    spawnRotateGrunt(500, 590, -enemyStats.reverseGruntRotateXVelocity, -enemyStats.reverseGruntRotateYVelocity, 'gruntRotate', 'rotateGruntShot', true, false);
+                    spawnRotateGrunt(10, 590, enemyStats.reverseGruntRotateXVelocity, -enemyStats.reverseGruntRotateYVelocity, 'gruntRotate', 'rotateGruntShot', false, false);
+                    break;
+                case 3550:
+                    spawnRotateGrunt(500, 10, -enemyStats.reverseGruntRotateXVelocity, enemyStats.reverseGruntRotateYVelocity, 'gruntRotate', 'rotateGruntShot', true, false);
+                    spawnRotateGrunt(10, 10, enemyStats.reverseGruntRotateXVelocity, enemyStats.reverseGruntRotateYVelocity, 'gruntRotate', 'rotateGruntShot', false, false);
+                    break;
+                case 3750:
+                    spawnRotateGrunt(500, 590, -enemyStats.reverseGruntRotateXVelocity, -enemyStats.reverseGruntRotateYVelocity, 'gruntRotate', 'rotateGruntShot', true, false);
+                    spawnRotateGrunt(10, 590, enemyStats.reverseGruntRotateXVelocity, -enemyStats.reverseGruntRotateYVelocity, 'gruntRotate', 'rotateGruntShot', false, false);
+                    spawnStraightGrunt(10, 10, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightBlue', 'straightGruntShot', true);
+                    spawnStraightGrunt(500, 10, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightBlue', 'straightGruntShot', true);
+                    break;
+                case 4050:
+                    spawnStraightGrunt(10, 50, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightBlue', 'straightGruntShot', true);
+                    spawnStraightGrunt(500, 50, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightRed', 'straightGruntShot', true);
+                    break;
+                case 4100:
+                    spawnStraightGrunt(10, 50, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightBlue', 'straightGruntShot', true);
+                    spawnStraightGrunt(500, 50, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightRed', 'straightGruntShot', true);
+                    break;
+                case 4150:
+                    spawnStraightGrunt(10, 50, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightBlue', 'straightGruntShot', true);
+                    spawnStraightGrunt(500, 50, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightRed', 'straightGruntShot', true);
+                    break;
+                case 4200:
+                    spawnStraightGrunt(10, 50, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightBlue', 'straightGruntShot', true);
+                    spawnStraightGrunt(500, 50, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightRed', 'straightGruntShot', true);
+                    break;
+                case 4250:
+                    spawnStraightGrunt(10, 50, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightBlue', 'straightGruntShot', true);
+                    spawnStraightGrunt(500, 50, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightRed', 'straightGruntShot', true);
+                    break;
+                case 4300:
+                    spawnStraightGrunt(10, 50, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightBlue', 'straightGruntShot', true);
+                    spawnStraightGrunt(500, 50, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightRed', 'straightGruntShot', true);
+                    break;
+                case 4350:
+                    spawnStraightGrunt(10, 50, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightBlue', 'straightGruntShot', true);
+                    spawnStraightGrunt(500, 50, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightRed', 'straightGruntShot', true);
+                    spawnRotateGrunt(128, 25, 0, enemyStats.movingGruntRotateYVelocity, 'gruntRotate', 'rotateGruntShot', true, true);
+                    break;
+                case 4400:
+                    spawnStraightGrunt(10, 50, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightBlue', 'straightGruntShot', true);
+                    spawnStraightGrunt(500, 50, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightRed', 'straightGruntShot', true);
+                    break;
+                case 4450:
+                    spawnStraightGrunt(10, 50, enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightBlue', 'straightGruntShot', true);
+                    spawnStraightGrunt(500, 50, -enemyStats.movingGruntStraightXVelocity, enemyStats.gruntYvelocity, 'gruntStraightRed', 'straightGruntShot', true);
+                    break;
+                case 4650:
+                    spawnRotateGrunt(384, 25, 0, enemyStats.movingGruntRotateYVelocity, 'gruntRotate', 'rotateGruntShot', false, true);
+                    break;
+                case 4750:
+                    //bgm fade
+                    bgm.fadeOut(7000);
+                    //tween fade into black and then out to new background
+                    fadeBG = game.add.sprite(game.world.centerX, game.world.centerY, 'fade');
+                    fadeBG.anchor.setTo(0.5);
+                    fadeBG.alpha = 0;
+                    game.add.tween(fadeBG).to({alpha: 1}, 7000, Phaser.Easing.Linear.None, true, 0, 0, true);
+                    break;
+                case 5200:
+                    spawnYuyuko();
+                    bgm.stop();
+                    break;
+                default:
+                    break;
+            }
+        }
+    </script>
+</table>
+</body>
+</html>
