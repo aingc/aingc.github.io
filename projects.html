@@ -109,6 +109,34 @@
                     <img src="images/epmsPreview2.png" height="30%" width="30%">
                 </div>
             </div>
+            <br>
+            <h3>Fish Fate</h3>
+            <div id="fishFate" class="panel panel-default">
+                <div class="panel-heading">
+                    Github: <a href="https://github.com/FishyByte" target="_blank">https://github.com/FishyByte</a>
+                    <br><br>
+                    Download the Android App!
+                    <a href="https://play.google.com/store/apps/details?id=com.ionicframework.fishfate542805&hl=en">Google Play Store Link</a>
+                </div>
+                <div class="panel-body padded">
+                    <p>
+                        Fish Fate is a mobile app that generates random actions (dice rolls, lottery numbers, coin flips)
+                        and uses the OpenCV Python library to track the position of fish in a fish tank for the seed in
+                        a true random number generator that I worked on together with my friends as a team in my Open
+                        Source Software Development class. In a high level description this app works by first tracking
+                        the position of fish using OpenCV with color detection. Once the position of an individual fish
+                        was received it was then translated into a stream of binary numbers. Those numbers were then put
+                        through data processing to translate those binary numbers into meaningful data using Shannon
+                        Entropy to calculate the expected value of the bitstream, then put through encryption and a
+                        whitener to finally end with unbiased information. The unbiased information is then stored in
+                        the backend (PostgreSQL) for the app to use up ahead of time.
+                    </p>
+                    <img src="images/fishOpenCVDemo.gif" height="30%" width="30%">
+                    <img src="images/fishOpenCV.png" height="20%" width="20%">
+                    <img src="images/fishDataProcessing.png">
+                    <img src="images/fishFateAppPreview.png" height="13%" width="13%">
+                </div>
+            </div>
         </div>
 
         <footer class="footer">
