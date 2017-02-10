@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0" />
+		<style>
+      #map {
+        width: 500px;
+        height: 400px;
+        background-color: grey;
+      }
+    </style>
+    <link rel="icon" type="image/png" href="../../../assets/favicons/Amazaing16x10.png" sizes="16x10">
+    <link rel="icon" type="image/png" href="../../../assets/favicons/Amazaing32x21.png" sizes="32x21">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script async defer
+    		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD3H5Ma47xKShsGaitBRBkO4c-_sCgi01M&region=US&callback=initMap">
+    </script>
+    <title>Corey Aing - EHS</title>
+	</head>
+
+	<body>
+    <!--
+      Corey Aing
+      11-26-2016
+    -->
+    <table>
+      <tr>
+        <td>
+		      <h4>Earthquake History Search, Corey Aing</h4>
+        </td>
+        <td>
+          <form id="bonusForm" onsubmit="bonus(); return false;">
+            <input type=submit value='Top 10 Largest Earthquakes in the World for the last 12 months'>
+          </form>
+        </td>
+      </tr>
+      <tr>
+        <td valign="top">
+          <div id="map"></div>
+          <div id="currentView"></div>
+          <br>
+          <div id="note">
+            <b>Note: </b>The bounding box boundary is +-5 Latitude Degrees and<br>+-10 Longitude degrees away from the origin of the view.<br>Unless it's the Top 10 List, which will be the whole world<br>(+-90 Latitude, +-180 Longitude).
+          </div>
+        </td>
+        <td valign="top">
+          <form id="searchForm" onsubmit="searchLocation(); return false;" style="display:inline">
+            <input id="q" type=text name=q placeholder="Enter City or Placename">
+            <input type=submit value=Search>
+          </form>
+          <div id="resultDiv"></div>
+        </td>
+      </tr>
+    </table>
+
+    <script type="text/javascript">
+    	var mainMap;
+      var earthquakeInfo;
+      var markers = [];
+      var boundingBox;
+      var resultOrigin;
+
+      //Initialize the Google Map
+    	function initMap() {
+        //Start off at Pioneer Square in Portland, OR
+    		var pioneerSquare = {lat: 45.51886, lng: -122.67932};
+      	mainMap = new google.maps.Map(document.getElementById('map'), {
+          zoom: 13,
+          center: pioneerSquare
+       	});
+
+        //Prepare a bounding box visual
+        boundingBox = new google.maps.Rectangle({
+          strokeColor: '#0000FF',
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: '#0000FF',
+          fillOpacity: 0.35,
+          map: null,
+          bounds: {
+            north: 0,
+            south: 0,
+            east: 0,
+            west: 0
+          }
+        });
+      }
+
+      //Plot a single Earthquake Marker that comes with a detail window and a click event listener for the window
+      function addEQMarker(loc, magnitude, date, depth) {
+        var markerDetail = '<div id="content">'+
+            '<p><b>Magnitude of Earthquake: </b>' + magnitude + '</p>'+
+            '<div id="bodyContent">'+
+            '<p><b>Latitude: </b>'+ loc.lat + '</p>' +
+            '<p><b>Longitude: </b>' + loc.lng + '</p>' +
+            '<p><b>Depth: </b>' + depth + ' km' + '</p>' +
+            '<p>(Happened on ' + date + ')</p>'+
+            '</div>';
+        var detailWindow = new google.maps.InfoWindow({
+          content: markerDetail,
+        });
+        var newMarker = new google.maps.Marker({
+          position: loc,
+          map: mainMap,
+          title: 'Happened on ' + date
+        });
+        newMarker.addListener('click', function() {
+          detailWindow.open(map, newMarker);
+        });
+        markers.push(newMarker);
+      }
+
+      //Plot unique city/placename marker
+      function addMarker(loc, name) {
+        var newMarker = new google.maps.Marker({
+          position: loc,
+          icon: {
+            path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+            strokeColor: '#FFFF00',
+            scale: 2
+          },
+          map: mainMap,
+          title: name
+        });
+        markers.push(newMarker);
+      }
+
+      //Sets map of all markers in array
+      function setMarkersMap(gmap) {
+        for (var i = 0; i < markers.length; ++i) {
+          markers[i].setMap(gmap);
+        }
+      }
+
+      //Removes view of markers on map
+      function clearMarkers() {
+        setMarkersMap(null);
+      }
+
+      //"Delete" all markers in array by removing their references
+      function deleteMarkers() {
+        clearMarkers();
+        markers = [];
+      }
+
+      //Make API Request for search term
+      function searchLocation() {
+    		var req = 'http://api.geonames.org/searchJSON?q=' + encodeURIComponent(document.getElementById('q').value) +
+        '&maxRows=20&username=caing';
+
+        jQuery.ajax({
+          'type': 'GET',
+          'url': req,
+          'dataType': 'json',
+          'async': false,
+          'success': function(data) {
+						getLocation(data, false);
+          },
+          'error': function() {
+            alert('Error with GET request of Geonames API');
+          }
+				});
+      }
+
+      //Function that satisfies the bonus requirement in the email in combination with other various functions,
+      //"Create a list of the top 10 largest earthquakes in the world for the last 12 months."
+      function bonus() {
+        //The extravagant API Request solution to the bonus requirement!
+        //+-90 is the max Latitude and +-180 is the max Longitude of the world
+        var req = 'http://api.geonames.org/earthquakesJSON?north=90&south=-90&east=180&west=-180&username=caing'
+
+        jQuery.ajax({
+          'type': 'GET',
+          'url': req,
+          'dataType': 'json',
+          'async': false,
+          'success': function(data) {
+            getLocation(data, true);
+            center(0, 0, 'Origin', true);
+          },
+          'error': function() {
+            alert('Error with GET request of Geonames API');
+          }
+        });
+      }
+
+      //Function referenced from Geonames and I modified it to what was needed
+      function getLocation(data, isBonus) {
+  			if (data == null || data.totalResultsCount < 1) {
+    		  //There was a problem parsing search results
+          alert('No data results with search term');
+    			return;
+  			}
+
+        //Make Top 10 List
+        if (isBonus) {
+          var topTenList = '';
+          var eqInfo = data.earthquakes;
+          for (var i = 0; i < eqInfo.length; ++i) {
+            var result = eqInfo[i];
+            topTenList = topTenList + '<li><b>Date & Time: </b>' + result.datetime + '<br>'
+            + '<b>Latitude & Longitude: </b>(' + result.lat + ', ' + result.lng + ')<br>'
+            + '<b>Magnitude: </b>' + result.magnitude + '<br>'
+            + '<b>Depth: </b>' + result.depth + ' km'
+            + '</li><br>';
+          }
+          document.getElementById('resultDiv').innerHTML = '<ol>' + topTenList + '</ol>';
+        }
+        else {
+          var newLink = '';
+          var geos = data.geonames;
+          for (var i = 0; i < geos.length; ++i) {
+            var result = geos[i];
+     			  //Make a html list with the geonames objects
+     			  //the link will call center() with lat/lng as the parameters. (The false is because it's not making the bonus list)
+            if (result.countryName != null && result.name != result.countryName) {
+              var placeText = result.name + ', ' + result.countryName;
+              newLink = newLink + '<a href="javascript:center(' + result.lat +', ' + result.lng + ', '
+                + '\'' + placeText + '\'' + ', ' + false + ');">' + result.name + ', ' + result.countryName + '</a><br>';
+            }
+            else {
+              newLink = newLink + '<a href="javascript:center(' + result.lat +', ' + result.lng + ', '
+                + '\'' + result.name +  '\'' + ', ' + false + ');">' + result.name + '</a><br>';
+            }
+          }
+          document.getElementById('resultDiv').innerHTML = newLink;
+        }
+      }
+
+      //Centers the google map on the lat/lng
+      function center(newLat, newLng, text, isBonus) {
+        var point = {lat: newLat, lng: newLng};
+        mainMap.setCenter(point);
+        deleteMarkers();
+        if (isBonus) {
+          mainMap.setZoom(1);
+          document.getElementById("currentView").innerHTML = '<b>Origin of resulting view: </b>Latitude & Longitude Origin';
+          addMarker(point, text);
+          searchRecentEarthquake(90, -90, 180, -180);
+        }
+        else {
+          mainMap.setZoom(5);
+          deleteMarkers();
+          document.getElementById("currentView").innerHTML = '<b>Origin of resulting view: </b>' + text;
+          addMarker(point, text);
+
+          //Call searchRecentEarthquake() with a boundary around the city
+          var boundingNorth = newLat + 5;
+          var boundingSouth = newLat - 5;
+          var boundingEast = newLng + 10;
+          var boundingWest = newLng - 10;
+          searchRecentEarthquake(boundingNorth, boundingSouth, boundingEast, boundingWest);
+        }
+      }
+
+      //Searches for relevant recent earthquakes in a bounding box
+      function searchRecentEarthquake(northBoundary, southBoundary, eastBoundary, westBoundary) {
+        var req = 'http://api.geonames.org/earthquakesJSON?north=' + northBoundary + '&south=' + southBoundary +
+        '&east=' + eastBoundary + '&west=' + westBoundary + '&username=caing';
+        boundingBox.setBounds({north: northBoundary, south: southBoundary, east: eastBoundary, west: westBoundary});
+        boundingBox.setMap(mainMap);
+        
+        jQuery.ajax({
+          'type': 'GET',
+          'url': req,
+          'dataType': 'json',
+          'async': false,
+          'success': function(data) {
+            getEarthquakeInfo(data);
+          }
+        });
+      }
+
+      //Parse Recent Earthquake JSON and plot each Earthquake accordingly
+      function getEarthquakeInfo(data) {
+        if (data == null || data.earthquakes < 1) {
+          //There was a problem parsing search results
+          alert('No recent earthquakes in this area');
+          return;
+        }
+
+        var quakeInfo = data.earthquakes;
+        for (var i = 0; i < quakeInfo.length; ++i) {
+          var result = quakeInfo[i];
+          var eqPosition = {lat: result.lat, lng: result.lng};
+          addEQMarker(eqPosition, result.magnitude, result.datetime, result.depth);
+        }
+      }
+		</script>
+	</body>
+</html>
