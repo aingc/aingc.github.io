@@ -1,0 +1,10 @@
+{
+  "name": "earthquakehistorysearch",
+  "version": "1.0.0",
+  "description": "Makes api calls to GeoNames and gets various Earthquake info",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Corey Aing"
+}
