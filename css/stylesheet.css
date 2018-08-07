@@ -1,0 +1,236 @@
+body {
+  background-color: #efefef !important;
+  font-family: 'Nunito', sans-serif !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Roboto Slab', serif !important;
+}
+
+.image-back {
+  background-image: url('../images/portlandView2Blur.jpg');
+  background-size: cover;
+  background-position: 0% 60%;
+  background-repeat: no-repeat;
+  text-shadow: -1px 0 #efefef, 0 1px #efefef, 1px 0 #efefef, 0 -1px #efefef;
+  -webkit-box-shadow: 0px 12px 54px -6px rgba(0,0,0,0.28);
+  -moz-box-shadow: 0px 12px 54px -6px rgba(0,0,0,0.28);
+  box-shadow: 0px 12px 54px -6px rgba(0,0,0,0.28);
+}
+
+.topmost {
+  z-index: 999;
+}
+
+.jumbotron-custom {
+  background-color: #efefef;
+}
+
+.img-avatar-align {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  margin: auto;
+}
+
+.left-border-emph {
+  border-left: 7px solid #99ccff !important;
+}
+
+.left-border-emph-green {
+  border-left: 7px solid #88d688 !important;
+}
+
+.left-border-emph-teal {
+  border-left: 7px solid #85dcd7 !important;
+}
+
+.left-border-emph-dark-blue {
+  border-left: 7px solid #6c6fd4 !important;
+}
+
+.row {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display:         flex;
+}
+
+.row > [class*='col-'] {
+  display: flex;
+  flex-direction: column;
+}
+
+.no-padding {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.no-left-padding {
+  padding-left: 0 !important;
+  margin: 0 !important;
+}
+
+.no-right-padding {
+  padding-right: 0 !important;
+  margin: 0 !important;
+}
+
+.no-side-padding {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+  margin: 0 !important;
+}
+
+.margin-top-10 {
+  margin-top: 10px;
+}
+
+.margin-top-5 {
+  margin-top: 5px;
+}
+
+.footer {
+  margin-top: 20px;
+  padding-bottom: 35px;
+  color: #afafaf;
+  /*background-color: #efefef;*/
+  padding: 20px 10px;
+}
+
+.fill {
+  min-height: 100%;
+}
+
+.sidemenu.active {
+  background-color: #99ccff !important;
+  /*background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #cfcfcf !important;
+  border-left: 7px solid #99ccff !important;
+  padding-left: 15px;
+  padding-bottom: 10px;*/
+}
+
+.sidebar {
+
+}
+
+.sidemenu {
+
+}
+
+.caption-mod {
+  color: #1f1f1f !important;
+  width: 100%;
+  right: 0 !important;
+  left: 0 !important;
+  padding-left: 100px;
+  padding-right: 100px;
+  padding-bottom: 45px !important;
+  bottom: 0px !important;
+
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#000000+0,636363+100&0+22,0.65+100 */
+  background: -moz-linear-gradient(top,  rgba(0,0,0,0) 0%, rgba(22,22,22,0) 22%, rgba(99,99,99,0.65) 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(top,  rgba(0,0,0,0) 0%,rgba(22,22,22,0) 22%,rgba(99,99,99,0.65) 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(to bottom,  rgba(0,0,0,0) 0%,rgba(22,22,22,0) 22%,rgba(99,99,99,0.65) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', endColorstr='#a6636363',GradientType=0 ); /* IE6-9 */
+}
+
+.carousel-controls.right {
+  right: 0;
+  left: auto;
+}
+
+.carousel-controls.left {
+  right: auto;
+  left: 0;
+}
+
+.carousel-controls {
+  position: absolute;
+  top: 90%;
+  bottom: 0;
+  left: 0;
+  width: 15%;
+  font-size: 20px;
+  color: #1f1f1f;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0,0,0,.6);
+  background-color: rgba(0,0,0,0);
+  filter: alpha(opacity=50);
+  opacity: .5;
+}
+
+.carousel-indicators {
+  bottom: 10px !important;
+}
+
+.carousel-indicators li {
+}
+
+.carousel-indicators .active {
+}
+
+.row.white {
+  background-color: #fff;
+}
+
+.padded {
+  padding: 15px 25px;
+}
+
+.border-top-bottom {
+  border-top: 1px solid #efefef;
+  border-bottom: 1px solid #efefef;
+}
+
+.card {
+	margin-bottom: 20px;
+	background-color: #fff;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.cardDefault {
+	border-color: #ddd;
+}
+
+.card > .cardHeading {
+	color: #333;
+	background-color: #f5f5f5;
+	border-color: #ddd;
+}
+
+.cardHeading {
+	padding: 10px 15px;
+	border-bottom: 1px solid transparent;
+	border-top-left-radius: 3px;
+	border-top-right-radius: 3px;
+}
+
+.cardBody {
+	padding: 15px;
+}
+
+.cardTitle {
+	margin-top: 0;
+	margin-bottom: 0;
+	font-size: 16px;
+	color: #333;
+}
+
+.h3, h3 {
+	font-size: 24px;
+	margin-top: 20px;
+	margin-bottom: 10px;
+}
+
+.cardList {
+	margin-top: 0;
+	margin-bottom: 10px;
+}
