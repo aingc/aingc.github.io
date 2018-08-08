@@ -18,9 +18,9 @@ var Templates = {
 					
 					<div class="uk-container">
 						<h3><span class="icon ion-md-school"></span> Education</h3>
-						<div class="left-border-emph-green panel card cardDefault">
+						<div class="uk-card uk-card-default left-border-emph-green panel card cardDefault">
 							<div>
-								<div class="uk-card uk-card-default uk-card-body cardBody">
+								<div class="cardBody">
 									Portland State University (2016)
 									<div class="pull-right">
 										Bachelor of Science in Computer Science
@@ -41,15 +41,48 @@ var Templates = {
 										<ul class="cardList">
 											<li>Discrete Data Structures (C++)</li>
 											<li>Programming Systems (C++)</li>
+											<li>Computational Structures</li>
+											<li>Operating Systems (C)</li>
+											<li>Algorithms & Complexity</li>
+											<li>Language & Compiler Design (Java)</li>
+											<li>Databases</li>
 										</ul>
 									</div>
 								</div>
 							</div>
 							<div>
-								<div class="uk-card uk-card-default uk-card-body left-border-emph-green panel">Item</div>
+								<div class="uk-card uk-card-default left-border-emph-green card cardDefault">
+									<div class="cardHeading">
+										<h5 class="cardTitle">Science / Mathematics</h5>
+									</div>
+									<div class="cardBody">
+										<ul class="cardList">
+											<li>Calculus Series</li>
+											<li>General Physics with Calculus</li>
+											<li>Applied Differential Equations</li>
+											<li>Chemistry</li>
+											<li>Applied Linear Algebra</li>
+										</ul>
+									</div>
+								</div>
 							</div>
 							<div>
-								<div class="uk-card uk-card-default uk-card-body left-border-emph-green panel">Item</div>
+								<div class="uk-card uk-card-default left-border-emph-green card cardDefault">
+									<div class="cardHeading">
+										<h5 class="cardTitle">Electives</h5>
+									</div>
+									<div class="cardBody">
+										<ul class="cardList">
+											<li>Computer Hardware</li>
+											<li>Wireless Networking Protocols</li>
+											<li>Open Source Software Development (JS)</li>
+											<li>Computer Ethics</li>
+											<li>Full Stack Web Development</li>
+											<li>Philosophy</li>
+											<li>Technical Writing</li>
+										</ul>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
