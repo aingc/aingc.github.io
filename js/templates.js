@@ -85,6 +85,79 @@ var Templates = {
 								</div>
 							</div>
 						</div>
+						
+						<h3><span class="icon ion-md-build"></span> Skills</h3>
+						<div class="uk-child-width-expand" uk-grid>
+							<div>
+								<div class="uk-card uk-card-default left-border-emph-teal card cardDefault">
+									<div class="cardHeading">
+										<h5 class="cardTitle">Coding Language</h5>
+									</div>
+									<div class="cardBody">
+										C, C++, Java, Python, HTML5, Javascript, PHP
+									</div>
+								</div>
+							</div>
+							<div>
+								<div class="uk-card uk-card-default left-border-emph-teal card cardDefault">
+									<div class="cardHeading">
+										<h5 class="cardTitle">Persistent Storage</h5>
+									</div>
+									<div class="cardBody">
+										PostgreSQL, MySQL, XML, JSON
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="uk-child-width-expand" uk-grid>
+							<div>
+								<div class="uk-card uk-card-default left-border-emph-teal card cardDefault">
+									<div class="cardHeading">
+										<h5 class="cardTitle">Frameworks/Libraries</h5>
+									</div>
+									<div class="cardBody">
+										Express, Socket, Bootstrap, Phaser, Meteor, Wordpress, React, Node, JQuery
+									</div>
+								</div>
+							</div>
+							<div>
+								<div class="uk-card uk-card-default left-border-emph-teal card cardDefault">
+									<div class="cardHeading">
+										<h5 class="cardTitle">Tools</h5>
+									</div>
+									<div class="cardBody">
+										GIT, npm, Linux, Unix, MS Winwdows, Gimp, MS Office, Webstorm, IntelliJ, Bash, Trello,
+										Slack, Google Hangouts
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<h3><span class="icon ion-md-briefcase"></span> Experience</h3>
+						<div>
+							<div class="uk-card uk-card-default left-border-emph-green card cardDefault">
+								<div class="cardHeading">
+									<a href="https://github.com/CapstoneWebsite/CapstoneWebApplication" target="_blank">
+										PSU CS Capstone Web Application
+									</a> - PSU Capstone Project
+									<div class="pull-right">
+										<span class="icon ion-md-calendar"></span> March 2016 - September 2016
+									</div>
+								</div>
+								<div class="cardBody">
+									<p>Web Application to assist with the CS Capstone Program at Portland State University</p>
+									<ul class="cardList">
+										<li>Learned new framework (Meteor) and library (React) to use for the project</li>
+										<li>
+											Worked on front-end view/submission forms for the Student Dashboard including resume
+											and 360 reviews that the Student has done or not done for their teammates
+										</li>
+										<li>Used Trello to assign tasks to team members and organize them through Agile methodology</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+						
 					</div>
 				`
 			}
